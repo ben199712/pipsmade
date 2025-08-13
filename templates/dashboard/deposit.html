@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit - pipsmade</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="investments.html">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Investments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="portfolio.html">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Portfolio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="deposit.html">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Deposit</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="withdraw.html">
+                        <i class="fas fa-minus-circle"></i>
+                        <span>Withdraw</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="transactions.html">
+                        <i class="fas fa-history"></i>
+                        <span>Transaction History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="support.html">
+                        <i class="fas fa-headset"></i>
+                        <span>Support</span>
+                    </a>
+                </li>
+                <li class="nav-item mt-auto">
+                    <a class="nav-link logout" href="../index.html">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="page-title">Deposit Funds</h5>
+            </div>
+            <div class="nav-right">
+                <div class="notifications">
+                    <button class="btn btn-link">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                </div>
+                <div class="user-menu dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>John Doe</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Deposit Content -->
+        <div class="dashboard-content">
+            <!-- Current Balance -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>$12,450.00</h3>
+                            <p>Current Balance</p>
+                            <span class="stats-change positive">+5.2%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>$5,000.00</h3>
+                            <p>Total Deposits</p>
+                            <span class="stats-change neutral">This Month</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>2-5 min</h3>
+                            <p>Processing Time</p>
+                            <span class="stats-change neutral">Average</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Methods -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Choose Deposit Method</h5>
+                            <div class="security-badge">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                <span>SSL Secured</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="deposit-method" data-method="bank">
+                                        <div class="method-icon">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <h5>Bank Transfer</h5>
+                                        <p>Direct bank transfer with instant processing</p>
+                                        <div class="method-details">
+                                            <div class="detail-item">
+                                                <span>Processing Time:</span>
+                                                <strong>Instant</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Fee:</span>
+                                                <strong>Free</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Minimum:</span>
+                                                <strong>$50</strong>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-outline-primary w-100" onclick="selectMethod('bank')">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="deposit-method" data-method="card">
+                                        <div class="method-icon">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                        <h5>Credit/Debit Card</h5>
+                                        <p>Visa, Mastercard, and American Express</p>
+                                        <div class="method-details">
+                                            <div class="detail-item">
+                                                <span>Processing Time:</span>
+                                                <strong>Instant</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Fee:</span>
+                                                <strong>2.9%</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Minimum:</span>
+                                                <strong>$25</strong>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-outline-primary w-100" onclick="selectMethod('card')">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="deposit-method" data-method="crypto">
+                                        <div class="method-icon">
+                                            <i class="fab fa-bitcoin"></i>
+                                        </div>
+                                        <h5>Cryptocurrency</h5>
+                                        <p>Bitcoin, Ethereum, and other cryptocurrencies</p>
+                                        <div class="method-details">
+                                            <div class="detail-item">
+                                                <span>Processing Time:</span>
+                                                <strong>10-30 min</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Fee:</span>
+                                                <strong>Network Fee</strong>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span>Minimum:</span>
+                                                <strong>$100</strong>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-outline-primary w-100" onclick="selectMethod('crypto')">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Form -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Deposit Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="depositForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Deposit Method</label>
+                                        <select class="form-select" id="depositMethod" required>
+                                            <option value="">Select method</option>
+                                            <option value="bank">Bank Transfer</option>
+                                            <option value="card">Credit/Debit Card</option>
+                                            <option value="crypto">Cryptocurrency</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Amount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="depositAmount" min="25" step="0.01" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bank Transfer Form -->
+                                <div id="bankForm" class="deposit-form-section" style="display: none;">
+                                    <h6 class="mt-4 mb-3">Bank Account Information</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Account Holder Name</label>
+                                            <input type="text" class="form-control" placeholder="John Doe">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Bank Name</label>
+                                            <input type="text" class="form-control" placeholder="Bank of America">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Account Number</label>
+                                            <input type="text" class="form-control" placeholder="1234567890">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Routing Number</label>
+                                            <input type="text" class="form-control" placeholder="021000021">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card Form -->
+                                <div id="cardForm" class="deposit-form-section" style="display: none;">
+                                    <h6 class="mt-4 mb-3">Card Information</h6>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Card Number</label>
+                                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Expiry Date</label>
+                                            <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">CVV</label>
+                                            <input type="text" class="form-control" placeholder="123" maxlength="4">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Cardholder Name</label>
+                                            <input type="text" class="form-control" placeholder="John Doe">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Crypto Form -->
+                                <div id="cryptoForm" class="deposit-form-section" style="display: none;">
+                                    <h6 class="mt-4 mb-3">Cryptocurrency Deposit</h6>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Select Cryptocurrency</label>
+                                            <select class="form-select">
+                                                <option value="btc">Bitcoin (BTC)</option>
+                                                <option value="eth">Ethereum (ETH)</option>
+                                                <option value="usdt">Tether (USDT)</option>
+                                                <option value="usdc">USD Coin (USDC)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="crypto-address">
+                                                <label class="form-label">Deposit Address</label>
+                                                <div class="address-container">
+                                                    <input type="text" class="form-control" value="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" readonly>
+                                                    <button type="button" class="btn btn-outline-primary" onclick="copyAddress()">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="text-muted">Send only the selected cryptocurrency to this address</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-plus-circle me-2"></i>Process Deposit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Deposit Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="deposit-summary">
+                                <div class="summary-item">
+                                    <span>Deposit Amount:</span>
+                                    <strong id="summaryAmount">$0.00</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Processing Fee:</span>
+                                    <strong id="summaryFee">$0.00</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>You'll Receive:</span>
+                                    <strong id="summaryTotal">$0.00</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Processing Time:</span>
+                                    <strong id="summaryTime">-</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="security-info mt-4">
+                                <h6><i class="fas fa-shield-alt me-2"></i>Security Features</h6>
+                                <ul class="security-list">
+                                    <li><i class="fas fa-check text-success me-2"></i>256-bit SSL encryption</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>PCI DSS compliant</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Two-factor authentication</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>FDIC insured</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/deposit.js"></script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - pipsmade</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="investments.html">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Investments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="portfolio.html">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Portfolio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deposit.html">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Deposit</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="withdraw.html">
+                        <i class="fas fa-minus-circle"></i>
+                        <span>Withdraw</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="transactions.html">
+                        <i class="fas fa-history"></i>
+                        <span>Transaction History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="support.html">
+                        <i class="fas fa-headset"></i>
+                        <span>Support</span>
+                    </a>
+                </li>
+                <li class="nav-item mt-auto">
+                    <a class="nav-link logout" href="../index.html">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="page-title">Support Center</h5>
+            </div>
+            <div class="nav-right">
+                <div class="notifications">
+                    <button class="btn btn-link">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                </div>
+                <div class="user-menu dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>John Doe</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Support Content -->
+        <div class="dashboard-content">
+            <!-- Support Options -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-option">
+                        <div class="support-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h5>Live Chat</h5>
+                        <p>Get instant help from our support team</p>
+                        <div class="support-status online">
+                            <i class="fas fa-circle"></i>
+                            <span>Online</span>
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="startLiveChat()">
+                            Start Chat
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-option">
+                        <div class="support-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email Support</h5>
+                        <p>Send us a detailed message</p>
+                        <div class="support-status">
+                            <i class="fas fa-clock"></i>
+                            <span>Response in 2-4 hours</span>
+                        </div>
+                        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#emailSupportModal">
+                            Send Email
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-option">
+                        <div class="support-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h5>Phone Support</h5>
+                        <p>Speak directly with our team</p>
+                        <div class="support-status">
+                            <i class="fas fa-clock"></i>
+                            <span>24/7 Available</span>
+                        </div>
+                        <button class="btn btn-outline-primary w-100">
+                            <i class="fas fa-phone me-2"></i>+1 (555) 123-4567
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Help & FAQ -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Frequently Asked Questions</h5>
+                            <div class="search-box">
+                                <input type="text" class="form-control" placeholder="Search FAQ..." id="faqSearch">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="accordion" id="faqAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                            How do I make a deposit?
+                                        </button>
+                                    </h2>
+                                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            To make a deposit, go to the Deposit page from your dashboard. Choose your preferred payment method (bank transfer, credit card, or cryptocurrency), enter the amount, and follow the instructions. Deposits are usually processed instantly.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                            How long do withdrawals take?
+                                        </button>
+                                    </h2>
+                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Withdrawal processing times vary by method: Bank transfers take 1-3 business days, cryptocurrency withdrawals take 10-60 minutes, and PayPal withdrawals take 1-2 business days.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                            What are the investment minimums?
+                                        </button>
+                                    </h2>
+                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Investment minimums vary by plan: Cryptocurrency ($500), Stock Trading ($1,000), Forex Trading ($750), and Bonds & Fixed Income ($2,000).
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                            How do I enable two-factor authentication?
+                                        </button>
+                                    </h2>
+                                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Go to your account settings, find the Security section, and click "Enable 2FA". You'll need to download an authenticator app like Google Authenticator or Authy, then scan the QR code provided.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                            Can I cancel an investment?
+                                        </button>
+                                    </h2>
+                                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Investment cancellations depend on the specific plan and timing. Generally, you can cancel within 24 hours of investment without penalty. After that, early withdrawal fees may apply.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-help-actions">
+                                <a href="#" class="quick-help-item">
+                                    <i class="fas fa-book"></i>
+                                    <div>
+                                        <h6>User Guide</h6>
+                                        <small>Complete platform guide</small>
+                                    </div>
+                                </a>
+                                <a href="#" class="quick-help-item">
+                                    <i class="fas fa-video"></i>
+                                    <div>
+                                        <h6>Video Tutorials</h6>
+                                        <small>Step-by-step videos</small>
+                                    </div>
+                                </a>
+                                <a href="#" class="quick-help-item">
+                                    <i class="fas fa-file-alt"></i>
+                                    <div>
+                                        <h6>Documentation</h6>
+                                        <small>Technical documentation</small>
+                                    </div>
+                                </a>
+                                <a href="#" class="quick-help-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <h6>Security Guide</h6>
+                                        <small>Account security tips</small>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Status -->
+                    <div class="chart-card mt-4">
+                        <div class="card-header">
+                            <h5>Support Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="support-status-info">
+                                <div class="status-item">
+                                    <div class="status-indicator online"></div>
+                                    <div>
+                                        <h6>Live Chat</h6>
+                                        <small>Available now</small>
+                                    </div>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-indicator online"></div>
+                                    <div>
+                                        <h6>Phone Support</h6>
+                                        <small>24/7 Available</small>
+                                    </div>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-indicator online"></div>
+                                    <div>
+                                        <h6>Email Support</h6>
+                                        <small>2-4 hour response</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Support Tickets -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Your Support Tickets</h5>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                                <i class="fas fa-plus me-2"></i>New Ticket
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table support-tickets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket ID</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
+                                            <th>Priority</th>
+                                            <th>Created</th>
+                                            <th>Last Update</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#SP-001234</td>
+                                            <td>Withdrawal processing delay</td>
+                                            <td><span class="badge bg-warning">In Progress</span></td>
+                                            <td><span class="badge bg-danger">High</span></td>
+                                            <td>Jan 20, 2024</td>
+                                            <td>2 hours ago</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>#SP-001233</td>
+                                            <td>Question about investment plans</td>
+                                            <td><span class="badge bg-success">Resolved</span></td>
+                                            <td><span class="badge bg-primary">Medium</span></td>
+                                            <td>Jan 18, 2024</td>
+                                            <td>1 day ago</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>#SP-001232</td>
+                                            <td>2FA setup assistance</td>
+                                            <td><span class="badge bg-success">Resolved</span></td>
+                                            <td><span class="badge bg-secondary">Low</span></td>
+                                            <td>Jan 15, 2024</td>
+                                            <td>3 days ago</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Support Modal -->
+    <div class="modal fade" id="emailSupportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send Email to Support</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emailSupportForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Subject</label>
+                                <select class="form-select" required>
+                                    <option value="">Select a topic</option>
+                                    <option value="account">Account Issues</option>
+                                    <option value="deposit">Deposit Problems</option>
+                                    <option value="withdrawal">Withdrawal Issues</option>
+                                    <option value="investment">Investment Questions</option>
+                                    <option value="technical">Technical Support</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" rows="6" placeholder="Describe your issue in detail..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Attachments (Optional)</label>
+                                <input type="file" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                <small class="text-muted">Max 5 files, 10MB each</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div class="modal fade" id="newTicketModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Support Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newTicketForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" required>
+                                    <option value="">Select category</option>
+                                    <option value="account">Account & Security</option>
+                                    <option value="deposits">Deposits & Payments</option>
+                                    <option value="withdrawals">Withdrawals</option>
+                                    <option value="investments">Investments & Trading</option>
+                                    <option value="technical">Technical Issues</option>
+                                    <option value="billing">Billing & Fees</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-control" placeholder="Brief description of your issue" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="6" placeholder="Provide detailed information about your issue..." required></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Create Ticket</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/support.js"></script>
+</body>
+</html>

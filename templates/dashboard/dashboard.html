@@ -1,0 +1,171 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Dashboard - pipsmade{% endblock %}
+
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>$12,450.00</h3>
+                            <p>Total Balance</p>
+                            <span class="stats-change positive">+5.2%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>$2,180.50</h3>
+                            <p>Total Profit</p>
+                            <span class="stats-change positive">+12.8%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>8</h3>
+                            <p>Active Investments</p>
+                            <span class="stats-change neutral">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>18.5%</h3>
+                            <p>ROI</p>
+                            <span class="stats-change positive">+2.1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Portfolio Performance</h5>
+                            <div class="chart-controls">
+                                <button class="btn btn-sm btn-outline-primary active">1M</button>
+                                <button class="btn btn-sm btn-outline-primary">3M</button>
+                                <button class="btn btn-sm btn-outline-primary">6M</button>
+                                <button class="btn btn-sm btn-outline-primary">1Y</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Asset Allocation</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="allocationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Quick Actions -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="activity-card">
+                        <div class="card-header">
+                            <h5>Recent Activity</h5>
+                            <a href="{% url 'transactions' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon deposit">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>Deposit</h6>
+                                        <p>Bank Transfer</p>
+                                        <small>2 hours ago</small>
+                                    </div>
+                                    <div class="activity-amount positive">+$1,000.00</div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon investment">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>Investment</h6>
+                                        <p>Bitcoin Portfolio</p>
+                                        <small>1 day ago</small>
+                                    </div>
+                                    <div class="activity-amount">$500.00</div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon profit">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>Profit</h6>
+                                        <p>Forex Trading</p>
+                                        <small>2 days ago</small>
+                                    </div>
+                                    <div class="activity-amount positive">+$125.50</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="quick-actions-card">
+                        <div class="card-header">
+                            <h5>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-actions">
+                                <a href="{% url 'deposit' %}" class="quick-action">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Deposit Funds</span>
+                                </a>
+                                <a href="{% url 'withdraw' %}" class="quick-action">
+                                    <i class="fas fa-minus-circle"></i>
+                                    <span>Withdraw</span>
+                                </a>
+                                <a href="{% url 'investments' %}" class="quick-action">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>New Investment</span>
+                                </a>
+                                <a href="{% url 'support' %}" class="quick-action">
+                                    <i class="fas fa-headset"></i>
+                                    <span>Get Support</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

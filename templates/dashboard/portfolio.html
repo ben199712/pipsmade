@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - pipsmade</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="investments.html">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Investments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="portfolio.html">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Portfolio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deposit.html">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Deposit</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="withdraw.html">
+                        <i class="fas fa-minus-circle"></i>
+                        <span>Withdraw</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="transactions.html">
+                        <i class="fas fa-history"></i>
+                        <span>Transaction History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="support.html">
+                        <i class="fas fa-headset"></i>
+                        <span>Support</span>
+                    </a>
+                </li>
+                <li class="nav-item mt-auto">
+                    <a class="nav-link logout" href="../index.html">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="page-title">Portfolio</h5>
+            </div>
+            <div class="nav-right">
+                <div class="notifications">
+                    <button class="btn btn-link">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                </div>
+                <div class="user-menu dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>John Doe</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Portfolio Content -->
+        <div class="dashboard-content">
+            <!-- Portfolio Overview -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Portfolio Performance</h5>
+                            <div class="chart-controls">
+                                <button class="btn btn-sm btn-outline-primary active">1M</button>
+                                <button class="btn btn-sm btn-outline-primary">3M</button>
+                                <button class="btn btn-sm btn-outline-primary">6M</button>
+                                <button class="btn btn-sm btn-outline-primary">1Y</button>
+                                <button class="btn btn-sm btn-outline-primary">All</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="portfolio-stats mb-3">
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <h4 class="text-primary mb-0">$12,450</h4>
+                                        <small>Total Value</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-success mb-0">+$2,180</h4>
+                                        <small>Total Gain</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-success mb-0">+18.5%</h4>
+                                        <small>Total Return</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-info mb-0">+5.2%</h4>
+                                        <small>Today</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <canvas id="portfolioPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Asset Allocation</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="assetAllocationChart"></canvas>
+                            <div class="allocation-legend mt-3">
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #10B981;"></span>
+                                    <span>Cryptocurrency (40%)</span>
+                                    <strong>$4,980</strong>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #3B82F6;"></span>
+                                    <span>Stocks (30%)</span>
+                                    <strong>$3,735</strong>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #F59E0B;"></span>
+                                    <span>Forex (20%)</span>
+                                    <strong>$2,490</strong>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #8B5CF6;"></span>
+                                    <span>Bonds (10%)</span>
+                                    <strong>$1,245</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Holdings -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Your Holdings</h5>
+                            <div class="portfolio-filters">
+                                <button class="btn btn-sm btn-outline-primary active">All Assets</button>
+                                <button class="btn btn-sm btn-outline-primary">Crypto</button>
+                                <button class="btn btn-sm btn-outline-primary">Stocks</button>
+                                <button class="btn btn-sm btn-outline-primary">Forex</button>
+                                <button class="btn btn-sm btn-outline-primary">Bonds</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table holdings-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Holdings</th>
+                                            <th>Current Price</th>
+                                            <th>Market Value</th>
+                                            <th>24h Change</th>
+                                            <th>Total Return</th>
+                                            <th>Allocation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="asset-info">
+                                                    <div class="asset-icon crypto">
+                                                        <i class="fab fa-bitcoin"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6>Bitcoin</h6>
+                                                        <small>BTC</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>0.1156 BTC</td>
+                                            <td>$43,125.50</td>
+                                            <td>$4,985.25</td>
+                                            <td class="text-success">+2.4%</td>
+                                            <td class="text-success">+25.8%</td>
+                                            <td>
+                                                <div class="allocation-bar">
+                                                    <div class="allocation-fill" style="width: 40%;"></div>
+                                                </div>
+                                                <small>40%</small>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="asset-info">
+                                                    <div class="asset-icon stocks">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6>Apple Inc.</h6>
+                                                        <small>AAPL</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>20 shares</td>
+                                            <td>$186.75</td>
+                                            <td>$3,735.00</td>
+                                            <td class="text-success">+1.2%</td>
+                                            <td class="text-success">+15.4%</td>
+                                            <td>
+                                                <div class="allocation-bar">
+                                                    <div class="allocation-fill" style="width: 30%;"></div>
+                                                </div>
+                                                <small>30%</small>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="asset-info">
+                                                    <div class="asset-icon forex">
+                                                        <i class="fas fa-dollar-sign"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6>EUR/USD</h6>
+                                                        <small>Forex</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>2,300 units</td>
+                                            <td>1.0826</td>
+                                            <td>$2,490.00</td>
+                                            <td class="text-danger">-0.3%</td>
+                                            <td class="text-success">+18.2%</td>
+                                            <td>
+                                                <div class="allocation-bar">
+                                                    <div class="allocation-fill" style="width: 20%;"></div>
+                                                </div>
+                                                <small>20%</small>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="asset-info">
+                                                    <div class="asset-icon bonds">
+                                                        <i class="fas fa-university"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6>US Treasury</h6>
+                                                        <small>10Y Bond</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>12 bonds</td>
+                                            <td>$103.75</td>
+                                            <td>$1,245.00</td>
+                                            <td class="text-success">+0.1%</td>
+                                            <td class="text-success">+6.8%</td>
+                                            <td>
+                                                <div class="allocation-bar">
+                                                    <div class="allocation-fill" style="width: 10%;"></div>
+                                                </div>
+                                                <small>10%</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Performance Metrics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-label">Sharpe Ratio</div>
+                                    <div class="metric-value">1.85</div>
+                                    <div class="metric-description">Risk-adjusted return</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Max Drawdown</div>
+                                    <div class="metric-value text-danger">-8.2%</div>
+                                    <div class="metric-description">Largest peak-to-trough decline</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Volatility</div>
+                                    <div class="metric-value">12.4%</div>
+                                    <div class="metric-description">Standard deviation of returns</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Beta</div>
+                                    <div class="metric-value">0.92</div>
+                                    <div class="metric-description">Market correlation</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Recent Transactions</h5>
+                            <a href="transactions.html" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="transaction-list">
+                                <div class="transaction-item">
+                                    <div class="transaction-icon buy">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div class="transaction-info">
+                                        <h6>Buy Bitcoin</h6>
+                                        <small>0.0234 BTC</small>
+                                    </div>
+                                    <div class="transaction-amount">
+                                        <div>$1,000.00</div>
+                                        <small>2 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="transaction-item">
+                                    <div class="transaction-icon sell">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <div class="transaction-info">
+                                        <h6>Sell Apple</h6>
+                                        <small>5 shares</small>
+                                    </div>
+                                    <div class="transaction-amount">
+                                        <div>$935.00</div>
+                                        <small>1 day ago</small>
+                                    </div>
+                                </div>
+                                <div class="transaction-item">
+                                    <div class="transaction-icon dividend">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    <div class="transaction-info">
+                                        <h6>Dividend</h6>
+                                        <small>AAPL</small>
+                                    </div>
+                                    <div class="transaction-amount">
+                                        <div>$24.50</div>
+                                        <small>3 days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/portfolio.js"></script>
+</body>
+</html>
