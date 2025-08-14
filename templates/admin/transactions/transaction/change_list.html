@@ -1,0 +1,129 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    color: white;
+}
+
+.bg-success { background-color: #28a745; }
+.bg-warning { background-color: #ffc107; color: #212529; }
+.bg-danger { background-color: #dc3545; }
+.bg-info { background-color: #17a2b8; }
+.bg-secondary { background-color: #6c757d; }
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border: 1px solid transparent;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-sm {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-warning {
+    color: #212529;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.transaction-stats {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: inline-block;
+    margin-right: 2rem;
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block content_title %}
+<h1>Transaction Management</h1>
+<div class="transaction-stats">
+    <div class="stat-item">
+        <span class="stat-number" id="pendingCount">-</span>
+        <span class="stat-label">Pending</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number" id="todayCount">-</span>
+        <span class="stat-label">Today</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number" id="totalVolume">-</span>
+        <span class="stat-label">Total Volume</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+<script>
+// Auto-refresh for pending transactions
+if (window.location.search.includes('status__exact=pending')) {
+    setTimeout(function() {
+        window.location.reload();
+    }, 30000); // Refresh every 30 seconds
+}
+
+// Load transaction statistics
+document.addEventListener('DOMContentLoaded', function() {
+    // This would typically load via AJAX, for now showing placeholder
+    document.getElementById('pendingCount').textContent = '{{ cl.result_count }}';
+    document.getElementById('todayCount').textContent = 'N/A';
+    document.getElementById('totalVolume').textContent = 'N/A';
+});
+</script>
+{% endblock %}

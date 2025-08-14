@@ -1,0 +1,309 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Deposit - pipsmade{% endblock %}
+
+{% block page_title %}Crypto Deposit{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Deposit Instructions -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>How to Deposit</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center">
+                            <div class="step-icon">
+                                <i class="fas fa-coins fa-2x text-primary"></i>
+                            </div>
+                            <h6 class="mt-2">1. Choose Crypto</h6>
+                            <p class="text-muted">Select the cryptocurrency you want to deposit</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="step-icon">
+                                <i class="fas fa-paper-plane fa-2x text-success"></i>
+                            </div>
+                            <h6 class="mt-2">2. Send Crypto</h6>
+                            <p class="text-muted">Send crypto to our wallet address</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="step-icon">
+                                <i class="fas fa-check-circle fa-2x text-info"></i>
+                            </div>
+                            <h6 class="mt-2">3. Submit Proof</h6>
+                            <p class="text-muted">Submit transaction hash for verification</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Wallets -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-wallet me-2"></i>Available Deposit Wallets</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for wallet in crypto_wallets %}
+                        <div class="col-md-6">
+                            <div class="crypto-wallet-card" data-crypto="{{ wallet.crypto_type }}">
+                                <div class="wallet-header">
+                                    <i class="{{ wallet.get_crypto_icon }} me-2"></i>
+                                    <span class="crypto-name">{{ wallet.get_crypto_type_display }}</span>
+                                    <span class="network-badge">{{ wallet.network }}</span>
+                                </div>
+                                <div class="wallet-address">
+                                    <small class="text-muted">Wallet Address:</small>
+                                    <div class="address-container">
+                                        <code class="wallet-addr">{{ wallet.wallet_address }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary copy-btn" 
+                                                onclick="copyToClipboard('{{ wallet.wallet_address }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="wallet-info">
+                                    <small class="text-muted">
+                                        Min: {{ wallet.minimum_deposit }} {{ wallet.crypto_type }}
+                                        {% if wallet.deposit_fee_percentage > 0 %}
+                                        | Fee: {{ wallet.deposit_fee_percentage }}%
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Form -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-plus-circle me-2"></i>Submit Deposit Request</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="depositForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cryptocurrency</label>
+                                {{ form.crypto_wallet }}
+                                <div class="form-text">Select the crypto you deposited</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                {{ form.amount }}
+                                <div class="form-text" id="minAmountText">Enter the exact amount you sent</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Transaction Hash</label>
+                                {{ form.transaction_hash }}
+                                <div class="form-text">{{ form.transaction_hash.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Sender Address</label>
+                                {{ form.sender_address }}
+                                <div class="form-text">{{ form.sender_address.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Proof of Payment (Optional)</label>
+                                {{ form.proof_image }}
+                                <div class="form-text">{{ form.proof_image.help_text }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Important:</strong> Make sure the transaction hash and amount are correct. 
+                                Deposits are manually verified by our team and may take 1-24 hours to process.
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Deposit Request
+                            </button>
+                            <a href="{% url 'transactions' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.crypto-wallet-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.crypto-wallet-card:hover {
+    border-color: #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1);
+}
+
+.crypto-wallet-card.selected {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.wallet-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.crypto-name {
+    font-weight: 600;
+    margin-right: auto;
+}
+
+.network-badge {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.address-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.wallet-addr {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+    flex: 1;
+}
+
+.copy-btn {
+    padding: 4px 8px;
+}
+
+.wallet-info {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e9ecef;
+}
+
+.step-icon {
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .address-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .copy-btn {
+        align-self: flex-end;
+        width: fit-content;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showSuccess('Wallet address copied to clipboard!');
+    }).catch(function() {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showSuccess('Wallet address copied to clipboard!');
+    });
+}
+
+// Wallet selection
+document.addEventListener('DOMContentLoaded', function() {
+    const walletCards = document.querySelectorAll('.crypto-wallet-card');
+    const cryptoSelect = document.getElementById('cryptoWallet');
+    const amountInput = document.getElementById('depositAmount');
+    const minAmountText = document.getElementById('minAmountText');
+    
+    // Handle wallet card clicks
+    walletCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const cryptoType = this.dataset.crypto;
+            
+            // Remove selected class from all cards
+            walletCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update select dropdown
+            for (let option of cryptoSelect.options) {
+                if (option.text.includes(cryptoType)) {
+                    cryptoSelect.value = option.value;
+                    break;
+                }
+            }
+            
+            // Trigger change event
+            cryptoSelect.dispatchEvent(new Event('change'));
+        });
+    });
+    
+    // Handle crypto selection change
+    cryptoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            // Update minimum amount text
+            const walletCard = document.querySelector(`[data-crypto="${selectedOption.text.split(' ')[0]}"]`);
+            if (walletCard) {
+                const minAmount = walletCard.querySelector('.wallet-info small').textContent.match(/Min: ([\d.]+)/);
+                if (minAmount) {
+                    minAmountText.textContent = `Minimum deposit: ${minAmount[1]} ${selectedOption.text.split(' ')[0]}`;
+                }
+            }
+        }
+    });
+    
+    // Form submission
+    document.getElementById('depositForm').addEventListener('submit', function(e) {
+        const amount = amountInput.value;
+        const crypto = cryptoSelect.options[cryptoSelect.selectedIndex].text;
+        
+        if (!amount || !crypto) {
+            e.preventDefault();
+            showError('Please fill in all required fields!');
+            return;
+        }
+        
+        showInfo('Submitting deposit request...', 3000);
+    });
+});
+</script>
+{% endblock %}

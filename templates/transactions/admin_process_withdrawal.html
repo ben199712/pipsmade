@@ -1,0 +1,393 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Process Withdrawal - Admin - pipsmade{% endblock %}
+
+{% block page_title %}Process Withdrawal Request{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog me-2"></i>Withdrawal Request #{{ withdrawal_request.id }}</h5>
+                    <span class="badge bg-{{ transaction.get_status_color }}">{{ transaction.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <!-- User Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user me-2"></i>User Information</h6>
+                            <div class="info-card">
+                                <p><strong>Username:</strong> {{ transaction.user.username }}</p>
+                                <p><strong>Email:</strong> {{ transaction.user.email }}</p>
+                                <p><strong>Full Name:</strong> {{ transaction.user.get_full_name|default:"Not provided" }}</p>
+                                <p><strong>Date Joined:</strong> {{ transaction.user.date_joined|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2"></i>Request Details</h6>
+                            <div class="info-card">
+                                <p><strong>Cryptocurrency:</strong> {{ withdrawal_request.crypto_type }}</p>
+                                <p><strong>Network:</strong> {{ withdrawal_request.network }}</p>
+                                <p><strong>Amount:</strong> {{ withdrawal_request.amount }} {{ withdrawal_request.crypto_type }}</p>
+                                <p><strong>Submitted:</strong> {{ withdrawal_request.created_at|date:"M d, Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Withdrawal Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-wallet me-2"></i>Withdrawal Information</h6>
+                            <div class="withdrawal-info">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <label>Destination Address:</label>
+                                            <div class="address-display">
+                                                <code>{{ withdrawal_request.destination_address }}</code>
+                                                <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                        onclick="copyToClipboard('{{ withdrawal_request.destination_address }}')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <label>Network:</label>
+                                            <span class="network-badge">{{ withdrawal_request.network }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <label>Request Amount:</label>
+                                            <span class="amount">{{ withdrawal_request.amount }} {{ withdrawal_request.crypto_type }}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <label>Platform Fee:</label>
+                                            <span class="fee">{{ withdrawal_request.platform_fee }} {{ withdrawal_request.crypto_type }}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <label>Net Amount:</label>
+                                            <span class="net-amount">{{ withdrawal_request.net_amount }} {{ withdrawal_request.crypto_type }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-shield-alt me-2"></i>Security Information</h6>
+                            <div class="info-card">
+                                <p><strong>IP Address:</strong> {{ withdrawal_request.ip_address }}</p>
+                                <p><strong>User Agent:</strong> 
+                                    <small class="text-muted">{{ withdrawal_request.user_agent|truncatechars:50 }}</small>
+                                </p>
+                                <p><strong>2FA Verified:</strong> 
+                                    {% if withdrawal_request.two_factor_verified %}
+                                        <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">No</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-history me-2"></i>Processing History</h6>
+                            <div class="info-card">
+                                {% if withdrawal_request.processed_by %}
+                                <p><strong>Processed By:</strong> {{ withdrawal_request.processed_by.username }}</p>
+                                <p><strong>Processed At:</strong> {{ withdrawal_request.processed_at|date:"M d, Y H:i" }}</p>
+                                {% endif %}
+                                {% if withdrawal_request.sent_transaction_hash %}
+                                <p><strong>Blockchain Hash:</strong> 
+                                    <code>{{ withdrawal_request.sent_transaction_hash }}</code>
+                                </p>
+                                {% endif %}
+                                {% if withdrawal_request.processing_notes %}
+                                <p><strong>Previous Notes:</strong> {{ withdrawal_request.processing_notes }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Action Form -->
+                    <div class="admin-actions">
+                        <h6><i class="fas fa-tools me-2"></i>Admin Actions</h6>
+                        
+                        {% if transaction.status == 'pending' %}
+                        <!-- Approve/Reject Actions -->
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <label class="form-label">Admin Notes</label>
+                                    <textarea name="admin_notes" class="form-control mb-3" rows="3" 
+                                              placeholder="Add processing notes (required for approval/rejection)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Approving this withdrawal will immediately deduct the amount from the user's wallet balance and mark the transaction as completed.
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="submit" name="action" value="approve" class="btn btn-success me-2">
+                                    <i class="fas fa-check me-2"></i>Approve & Complete Withdrawal
+                                </button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger me-2">
+                                    <i class="fas fa-times me-2"></i>Reject Withdrawal
+                                </button>
+                            </div>
+                        </form>
+                        
+                        {% elif transaction.status == 'processing' %}
+                        <!-- Complete Action -->
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Blockchain Transaction Hash</label>
+                                    <input type="text" name="transaction_hash" class="form-control mb-3" 
+                                           placeholder="Enter the blockchain transaction hash" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Completion Notes</label>
+                                    <textarea name="admin_notes" class="form-control mb-3" rows="2" 
+                                              placeholder="Add completion notes"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="submit" name="action" value="complete" class="btn btn-primary me-2">
+                                    <i class="fas fa-check-circle me-2"></i>Mark as Completed
+                                </button>
+                            </div>
+                        </form>
+                        {% endif %}
+
+                        <div class="navigation-buttons mt-3">
+                            <a href="{% url 'admin_transactions' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                            </a>
+                            <a href="{% url 'admin_transactions' %}?status=pending&type=withdrawal" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>Pending Withdrawals
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmationMessage"></p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmAction">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #495057;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.address-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.address-display code {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+    flex: 1;
+    border: 1px solid #dee2e6;
+}
+
+.network-badge {
+    background: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.amount, .fee, .net-amount {
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.net-amount {
+    color: #28a745;
+}
+
+.withdrawal-info {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.admin-actions {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.navigation-buttons {
+    border-top: 1px solid #dee2e6;
+    padding-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons,
+    .navigation-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn,
+    .navigation-buttons .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .address-display {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showSuccess('Address copied to clipboard!');
+    }).catch(function() {
+        showError('Failed to copy to clipboard');
+    });
+}
+
+// Form submission with confirmation
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form[method="post"]');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const action = e.submitter.value;
+            const adminNotes = form.querySelector('textarea[name="admin_notes"]');
+            
+            // Validate admin notes for certain actions
+            if ((action === 'approve' || action === 'reject') && (!adminNotes || !adminNotes.value.trim())) {
+                e.preventDefault();
+                showError('Admin notes are required for approval/rejection!');
+                return;
+            }
+            
+            // Show confirmation modal
+            e.preventDefault();
+            
+            let message = '';
+            let confirmClass = 'btn-primary';
+            
+            switch(action) {
+                case 'approve':
+                    message = 'Are you sure you want to approve this withdrawal? This will:\n\n• Deduct {{ withdrawal_request.amount }} {{ withdrawal_request.crypto_type }} from user\'s wallet\n• Mark transaction as completed\n• Send notification to user\n\nThis action cannot be undone.';
+                    confirmClass = 'btn-success';
+                    break;
+                case 'reject':
+                    message = 'Are you sure you want to reject this withdrawal request?';
+                    confirmClass = 'btn-danger';
+                    break;
+                case 'complete':
+                    const txHash = form.querySelector('input[name="transaction_hash"]');
+                    if (!txHash || !txHash.value.trim()) {
+                        showError('Blockchain transaction hash is required!');
+                        return;
+                    }
+                    message = 'Are you sure you want to mark this withdrawal as completed?';
+                    confirmClass = 'btn-primary';
+                    break;
+            }
+            
+            document.getElementById('confirmationMessage').textContent = message;
+            const confirmBtn = document.getElementById('confirmAction');
+            confirmBtn.className = `btn ${confirmClass}`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            modal.show();
+            
+            // Handle confirmation
+            confirmBtn.onclick = function() {
+                modal.hide();
+                
+                // Show processing message
+                if (action === 'approve') {
+                    showInfo('Processing withdrawal approval...', 3000);
+                } else if (action === 'reject') {
+                    showWarning('Processing withdrawal rejection...', 3000);
+                } else if (action === 'complete') {
+                    showSuccess('Marking withdrawal as completed...', 3000);
+                }
+                
+                // Submit the form
+                form.submit();
+            };
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,441 +1,492 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investments - pipsmade</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/styles.css">
-</head>
-<body class="dashboard-page">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Investments - pipsmade{% endblock %}
+
+{% block page_title %}Investment Plans{% endblock %}
+
+{% block content %}
+    <!-- Portfolio Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ portfolio.total_invested|floatformat:2 }}</h3>
+                    <p>Total Invested</p>
+                    <span class="stats-change neutral">{{ portfolio.active_investments }} active</span>
+                </div>
+            </div>
         </div>
-        <nav class="sidebar-nav">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard.html">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="investments.html">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>Investments</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="portfolio.html">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Portfolio</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="deposit.html">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Deposit</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="withdraw.html">
-                        <i class="fas fa-minus-circle"></i>
-                        <span>Withdraw</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="transactions.html">
-                        <i class="fas fa-history"></i>
-                        <span>Transaction History</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="support.html">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
-                <li class="nav-item mt-auto">
-                    <a class="nav-link logout" href="../index.html">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-success">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ portfolio.total_current_value|floatformat:2 }}</h3>
+                    <p>Current Value</p>
+                    <span class="stats-change positive">+{{ portfolio.total_roi_percentage|floatformat:1 }}%</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ portfolio.total_profit|floatformat:2 }}</h3>
+                    <p>Total Profit</p>
+                    <span class="stats-change {% if portfolio.total_profit >= 0 %}positive{% else %}negative{% endif %}">
+                        {% if portfolio.total_profit >= 0 %}+{% endif %}{{ portfolio.total_profit|floatformat:2 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ portfolio.completed_investments }}</h3>
+                    <p>Completed</p>
+                    <span class="stats-change neutral">{{ portfolio.active_investments|add:portfolio.completed_investments }} total</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Navigation -->
-        <nav class="top-nav">
-            <div class="nav-left">
-                <button class="sidebar-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h5 class="page-title">Investments</h5>
-            </div>
-            <div class="nav-right">
-                <div class="notifications">
-                    <button class="btn btn-link">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
+    <!-- Investment Plans -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Available Investment Plans</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#investmentModal">
+                        <i class="fas fa-plus me-2"></i>New Investment
                     </button>
                 </div>
-                <div class="user-menu dropdown">
-                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <div class="user-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span>John Doe</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Investments Content -->
-        <div class="dashboard-content">
-            <!-- Investment Plans -->
-            <div class="row g-4 mb-4">
-                <div class="col-12">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Available Investment Plans</h5>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newInvestmentModal">
-                                <i class="fas fa-plus me-2"></i>New Investment
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-4">
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="investment-plan">
-                                        <div class="plan-header">
-                                            <div class="plan-icon crypto">
-                                                <i class="fab fa-bitcoin"></i>
-                                            </div>
-                                            <h5>Cryptocurrency</h5>
-                                            <p>High-yield crypto trading</p>
-                                        </div>
-                                        <div class="plan-details">
-                                            <div class="detail-item">
-                                                <span>Expected ROI:</span>
-                                                <strong>15-25%</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Minimum:</span>
-                                                <strong>$500</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Duration:</span>
-                                                <strong>30-90 days</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Risk Level:</span>
-                                                <strong class="text-warning">High</strong>
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-outline-primary w-100" onclick="selectPlan('crypto')">
-                                            Select Plan
-                                        </button>
+                <div class="card-body">
+                    <div class="row g-4">
+                        {% for plan in investment_plans %}
+                        <div class="col-lg-3 col-md-6">
+                            <div class="investment-plan-card">
+                                <div class="plan-header">
+                                    <div class="plan-icon">
+                                        {% if plan.plan_type == 'crypto' %}
+                                            <i class="fab fa-bitcoin"></i>
+                                        {% elif plan.plan_type == 'stocks' %}
+                                            <i class="fas fa-chart-bar"></i>
+                                        {% elif plan.plan_type == 'forex' %}
+                                            <i class="fas fa-exchange-alt"></i>
+                                        {% else %}
+                                            <i class="fas fa-university"></i>
+                                        {% endif %}
                                     </div>
+                                    <h5>{{ plan.name }}</h5>
+                                    <p class="plan-type">{{ plan.get_plan_type_display }}</p>
                                 </div>
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="investment-plan">
-                                        <div class="plan-header">
-                                            <div class="plan-icon stocks">
-                                                <i class="fas fa-chart-line"></i>
-                                            </div>
-                                            <h5>Stock Trading</h5>
-                                            <p>Diversified stock portfolio</p>
-                                        </div>
-                                        <div class="plan-details">
-                                            <div class="detail-item">
-                                                <span>Expected ROI:</span>
-                                                <strong>8-15%</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Minimum:</span>
-                                                <strong>$1,000</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Duration:</span>
-                                                <strong>60-180 days</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Risk Level:</span>
-                                                <strong class="text-primary">Medium</strong>
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-outline-primary w-100" onclick="selectPlan('stocks')">
-                                            Select Plan
-                                        </button>
+                                <div class="plan-body">
+                                    <div class="roi-range">
+                                        <span class="roi-label">ROI Range</span>
+                                        <span class="roi-value">{{ plan.min_roi_percentage }}% - {{ plan.max_roi_percentage }}%</span>
                                     </div>
-                                </div>
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="investment-plan">
-                                        <div class="plan-header">
-                                            <div class="plan-icon forex">
-                                                <i class="fas fa-dollar-sign"></i>
-                                            </div>
-                                            <h5>Forex Trading</h5>
-                                            <p>Currency pair trading</p>
+                                    <div class="plan-details">
+                                        <div class="detail-item">
+                                            <span>Min Investment:</span>
+                                            <span>${{ plan.min_investment }}</span>
                                         </div>
-                                        <div class="plan-details">
-                                            <div class="detail-item">
-                                                <span>Expected ROI:</span>
-                                                <strong>10-18%</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Minimum:</span>
-                                                <strong>$750</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Duration:</span>
-                                                <strong>45-120 days</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Risk Level:</span>
-                                                <strong class="text-primary">Medium</strong>
-                                            </div>
+                                        <div class="detail-item">
+                                            <span>Duration:</span>
+                                            <span>{{ plan.duration_days }} days</span>
                                         </div>
-                                        <button class="btn btn-outline-primary w-100" onclick="selectPlan('forex')">
-                                            Select Plan
-                                        </button>
+                                        <div class="detail-item">
+                                            <span>Risk Level:</span>
+                                            <span class="risk-{{ plan.risk_level }}">{{ plan.get_risk_level_display }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="investment-plan">
-                                        <div class="plan-header">
-                                            <div class="plan-icon bonds">
-                                                <i class="fas fa-university"></i>
-                                            </div>
-                                            <h5>Bonds & Fixed Income</h5>
-                                            <p>Stable government bonds</p>
-                                        </div>
-                                        <div class="plan-details">
-                                            <div class="detail-item">
-                                                <span>Expected ROI:</span>
-                                                <strong>5-8%</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Minimum:</span>
-                                                <strong>$2,000</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Duration:</span>
-                                                <strong>180-365 days</strong>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span>Risk Level:</span>
-                                                <strong class="text-success">Low</strong>
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-outline-primary w-100" onclick="selectPlan('bonds')">
-                                            Select Plan
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary w-100 invest-btn"
+                                            data-plan-id="{{ plan.id }}"
+                                            data-plan-name="{{ plan.name }}"
+                                            data-min-investment="{{ plan.min_investment }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#investmentModal">
+                                        Invest Now
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Investments -->
-            <div class="row g-4">
-                <div class="col-12">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Your Active Investments</h5>
-                            <div class="investment-filters">
-                                <button class="btn btn-sm btn-outline-primary active">All</button>
-                                <button class="btn btn-sm btn-outline-primary">Crypto</button>
-                                <button class="btn btn-sm btn-outline-primary">Stocks</button>
-                                <button class="btn btn-sm btn-outline-primary">Forex</button>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-4">
+                                <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                <h5>No Investment Plans Available</h5>
+                                <p class="text-muted">Check back later for new investment opportunities.</p>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table investment-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Investment</th>
-                                            <th>Amount</th>
-                                            <th>Current Value</th>
-                                            <th>Profit/Loss</th>
-                                            <th>ROI</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="investment-info">
-                                                    <div class="investment-icon crypto">
-                                                        <i class="fab fa-bitcoin"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6>Bitcoin Portfolio</h6>
-                                                        <small>Started: Jan 15, 2024</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>$2,500.00</td>
-                                            <td>$3,125.00</td>
-                                            <td class="text-success">+$625.00</td>
-                                            <td class="text-success">+25.0%</td>
-                                            <td><span class="badge bg-success">Active</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="investment-info">
-                                                    <div class="investment-icon stocks">
-                                                        <i class="fas fa-chart-line"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6>Tech Stocks</h6>
-                                                        <small>Started: Dec 20, 2023</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>$5,000.00</td>
-                                            <td>$5,750.00</td>
-                                            <td class="text-success">+$750.00</td>
-                                            <td class="text-success">+15.0%</td>
-                                            <td><span class="badge bg-success">Active</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="investment-info">
-                                                    <div class="investment-icon forex">
-                                                        <i class="fas fa-dollar-sign"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6>EUR/USD Trading</h6>
-                                                        <small>Started: Feb 1, 2024</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>$1,000.00</td>
-                                            <td>$1,180.00</td>
-                                            <td class="text-success">+$180.00</td>
-                                            <td class="text-success">+18.0%</td>
-                                            <td><span class="badge bg-success">Active</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- New Investment Modal -->
-    <div class="modal fade" id="newInvestmentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <!-- Active Investments -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock me-2"></i>Your Active Investments</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_investments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Investment Plan</th>
+                                    <th>Amount</th>
+                                    <th>ROI</th>
+                                    <th>Current Value</th>
+                                    <th>Profit</th>
+                                    <th>Progress</th>
+                                    <th>Days Left</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in active_investments %}
+                                <tr>
+                                    <td>
+                                        <div class="investment-info">
+                                            <strong>{{ investment.investment_plan.name }}</strong>
+                                            <small class="text-muted d-block">{{ investment.investment_plan.get_plan_type_display }}</small>
+                                        </div>
+                                    </td>
+                                    <td>${{ investment.amount|floatformat:2 }}</td>
+                                    <td>{{ investment.roi_percentage }}%</td>
+                                    <td>${{ investment.current_value|floatformat:2 }}</td>
+                                    <td class="{% if investment.get_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if investment.get_profit >= 0 %}+{% endif %}${{ investment.get_profit|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar" style="width: {{ investment.get_progress_percentage }}%"></div>
+                                        </div>
+                                        <small>{{ investment.get_progress_percentage|floatformat:1 }}%</small>
+                                    </td>
+                                    <td>{{ investment.days_remaining }} days</td>
+                                    <td>
+                                        <a href="{% url 'investment_detail' investment.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                onclick="cancelInvestment({{ investment.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h5>No Active Investments</h5>
+                        <p class="text-muted">Start your investment journey by choosing a plan above.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Modal -->
+    <div class="modal fade" id="investmentModal" tabindex="-1">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Create New Investment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="investmentForm">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Investment Plan</label>
-                                <select class="form-select" id="planSelect" required>
-                                    <option value="">Select a plan</option>
-                                    <option value="crypto">Cryptocurrency</option>
-                                    <option value="stocks">Stock Trading</option>
-                                    <option value="forex">Forex Trading</option>
-                                    <option value="bonds">Bonds & Fixed Income</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Investment Amount</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control" id="investmentAmount" min="500" required>
+                <form method="post" action="{% url 'create_investment' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Investment Plan</label>
+                            <select class="form-select" name="plan_id" id="planSelect" required>
+                                <option value="">Select a plan</option>
+                                {% for plan in investment_plans %}
+                                <option value="{{ plan.id }}"
+                                        data-min="{{ plan.min_investment }}"
+                                        data-max="{{ plan.max_investment|default:'' }}"
+                                        data-min-roi="{{ plan.min_roi_percentage }}"
+                                        data-max-roi="{{ plan.max_roi_percentage }}"
+                                        data-duration="{{ plan.duration_days }}">
+                                    {{ plan.name }} ({{ plan.min_roi_percentage }}% - {{ plan.max_roi_percentage }}%)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Investment Amount ($)</label>
+                            <input type="number" class="form-control" name="amount" id="investmentAmount"
+                                   step="0.01" min="100" required>
+                            <div class="form-text" id="amountHelp">Minimum: $100</div>
+                        </div>
+
+                        <div class="investment-calculator" id="calculator" style="display: none;">
+                            <div class="calculator-results">
+                                <h6>Potential Returns</h6>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="result-item">
+                                            <span class="result-label">Minimum</span>
+                                            <span class="result-value" id="minReturn">$0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="result-item">
+                                            <span class="result-label">Average</span>
+                                            <span class="result-value" id="avgReturn">$0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="result-item">
+                                            <span class="result-label">Maximum</span>
+                                            <span class="result-value" id="maxReturn">$0</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Duration</label>
-                                <select class="form-select" id="durationSelect" required>
-                                    <option value="">Select duration</option>
-                                    <option value="30">30 days</option>
-                                    <option value="60">60 days</option>
-                                    <option value="90">90 days</option>
-                                    <option value="180">180 days</option>
-                                    <option value="365">365 days</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Expected ROI</label>
-                                <input type="text" class="form-control" id="expectedROI" readonly>
-                            </div>
-                            <div class="col-12">
-                                <div class="investment-summary">
-                                    <h6>Investment Summary</h6>
-                                    <div class="summary-item">
-                                        <span>Investment Amount:</span>
-                                        <strong id="summaryAmount">$0.00</strong>
-                                    </div>
-                                    <div class="summary-item">
-                                        <span>Expected Return:</span>
-                                        <strong id="summaryReturn">$0.00</strong>
-                                    </div>
-                                    <div class="summary-item">
-                                        <span>Total Payout:</span>
-                                        <strong id="summaryTotal">$0.00</strong>
-                                    </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Duration: <span id="duration">0</span> days</small>
                                 </div>
                             </div>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="createInvestment()">Create Investment</button>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Investment</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/investments.js"></script>
-</body>
-</html>
+{% block extra_css %}
+<style>
+.investment-plan-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    height: 100%;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.investment-plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #28a745;
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.plan-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+    color: white;
+}
+
+.plan-icon i[class*="bitcoin"] { background: linear-gradient(135deg, #f7931e, #ff6b35); }
+.plan-icon i[class*="chart"] { background: linear-gradient(135deg, #007bff, #0056b3); }
+.plan-icon i[class*="exchange"] { background: linear-gradient(135deg, #28a745, #20c997); }
+.plan-icon i[class*="university"] { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+
+.roi-range {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.roi-label {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.roi-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #28a745;
+}
+
+.plan-details {
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.risk-low { color: #28a745; }
+.risk-medium { color: #ffc107; }
+.risk-high { color: #dc3545; }
+
+.investment-calculator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.result-item {
+    text-align: center;
+}
+
+.result-label {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.result-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #28a745;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/investments.js' %}"></script>
+<script>
+// Investment modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const planSelect = document.getElementById('planSelect');
+    const amountInput = document.getElementById('investmentAmount');
+    const amountHelp = document.getElementById('amountHelp');
+    const calculator = document.getElementById('calculator');
+
+    // Handle plan selection
+    planSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const minInvestment = selectedOption.dataset.min;
+            const maxInvestment = selectedOption.dataset.max;
+
+            amountInput.min = minInvestment;
+            amountInput.value = minInvestment;
+
+            let helpText = `Minimum: $${minInvestment}`;
+            if (maxInvestment) {
+                helpText += `, Maximum: $${maxInvestment}`;
+                amountInput.max = maxInvestment;
+            }
+            amountHelp.textContent = helpText;
+
+            updateCalculator();
+        } else {
+            calculator.style.display = 'none';
+        }
+    });
+
+    // Handle amount input
+    amountInput.addEventListener('input', updateCalculator);
+
+    function updateCalculator() {
+        const selectedOption = planSelect.options[planSelect.selectedIndex];
+        const amount = parseFloat(amountInput.value);
+
+        if (selectedOption.value && amount > 0) {
+            const minRoi = parseFloat(selectedOption.dataset.minRoi);
+            const maxRoi = parseFloat(selectedOption.dataset.maxRoi);
+            const duration = selectedOption.dataset.duration;
+
+            const minReturn = amount * (minRoi / 100);
+            const maxReturn = amount * (maxRoi / 100);
+            const avgReturn = amount * ((minRoi + maxRoi) / 2 / 100);
+
+            document.getElementById('minReturn').textContent = `$${(amount + minReturn).toFixed(2)}`;
+            document.getElementById('avgReturn').textContent = `$${(amount + avgReturn).toFixed(2)}`;
+            document.getElementById('maxReturn').textContent = `$${(amount + maxReturn).toFixed(2)}`;
+            document.getElementById('duration').textContent = duration;
+
+            calculator.style.display = 'block';
+        } else {
+            calculator.style.display = 'none';
+        }
+    }
+
+    // Handle invest buttons
+    document.querySelectorAll('.invest-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const planId = this.dataset.planId;
+            const planName = this.dataset.planName;
+            const minInvestment = this.dataset.minInvestment;
+
+            planSelect.value = planId;
+            amountInput.value = minInvestment;
+            amountInput.min = minInvestment;
+            amountHelp.textContent = `Minimum: $${minInvestment}`;
+
+            updateCalculator();
+        });
+    });
+});
+
+// Cancel investment function
+function cancelInvestment(investmentId) {
+    if (confirm('Are you sure you want to cancel this investment?')) {
+        showInfo('Processing cancellation...', 2000);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/investments/${investmentId}/cancel/`;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Investment form submission with alerts
+document.addEventListener('DOMContentLoaded', function() {
+    const investmentForm = document.querySelector('form[action*="create_investment"]');
+    if (investmentForm) {
+        investmentForm.addEventListener('submit', function(e) {
+            showInfo('Creating your investment...', 3000);
+        });
+    }
+});
+</script>
+{% endblock %}

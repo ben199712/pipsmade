@@ -18,6 +18,153 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
+    <!-- Alert Notification Styles -->
+    <style>
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .alert-notification {
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            animation: slideInRight 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .alert-notification.alert-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-left: 4px solid #34d399;
+        }
+
+        .alert-notification.alert-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-left: 4px solid #f87171;
+        }
+
+        .alert-notification.alert-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-left: 4px solid #fbbf24;
+        }
+
+        .alert-notification.alert-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-left: 4px solid #60a5fa;
+        }
+
+        .alert-notification .alert-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+
+        .alert-notification .alert-content {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .alert-notification .alert-message {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .alert-notification .alert-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 15px;
+            transition: color 0.2s;
+        }
+
+        .alert-notification .alert-close:hover {
+            color: white;
+        }
+
+        .alert-notification .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            animation: progressBar 5s linear;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .alert-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+    </style>
+
     <!-- Chart.js (for dashboard pages) -->
     {% block extra_css %}{% endblock %}
 
@@ -25,7 +172,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% endif %}
 </head>
-<body class="{% block body_class %}{% endblock %}"
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- Alert Notification Container -->
+    <div id="alertContainer" class="alert-container"></div>
+
     {% block navbar %}
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
@@ -155,6 +306,142 @@
 
     <!-- Custom JS -->
     <script src="{% static 'js/script.js' %}"></script>
+
+    <!-- Alert Notification System -->
+    <script>
+        class AlertNotification {
+            constructor() {
+                this.container = document.getElementById('alertContainer');
+                this.alertQueue = [];
+                this.isProcessing = false;
+            }
+
+            show(message, type = 'success', duration = 5000) {
+                this.alertQueue.push({ message, type, duration });
+                if (!this.isProcessing) {
+                    this.processQueue();
+                }
+            }
+
+            processQueue() {
+                if (this.alertQueue.length === 0) {
+                    this.isProcessing = false;
+                    return;
+                }
+
+                this.isProcessing = true;
+                const { message, type, duration } = this.alertQueue.shift();
+                this.createAlert(message, type, duration);
+            }
+
+            createAlert(message, type, duration) {
+                const alertId = 'alert-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+                const alertElement = document.createElement('div');
+                alertElement.id = alertId;
+                alertElement.className = `alert alert-notification alert-${type}`;
+
+                const iconMap = {
+                    success: 'fas fa-check-circle',
+                    error: 'fas fa-exclamation-circle',
+                    warning: 'fas fa-exclamation-triangle',
+                    info: 'fas fa-info-circle'
+                };
+
+                alertElement.innerHTML = `
+                    <div class="alert-content">
+                        <i class="alert-icon ${iconMap[type] || iconMap.info}"></i>
+                        <div class="alert-message">${message}</div>
+                        <button class="alert-close" onclick="alertSystem.close('${alertId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="progress-bar"></div>
+                `;
+
+                this.container.appendChild(alertElement);
+
+                // Auto-remove after duration
+                setTimeout(() => {
+                    this.close(alertId);
+                }, duration);
+
+                // Process next alert after a short delay
+                setTimeout(() => {
+                    this.processQueue();
+                }, 300);
+            }
+
+            close(alertId) {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (alertElement.parentNode) {
+                            alertElement.parentNode.removeChild(alertElement);
+                        }
+                    }, 300);
+                }
+            }
+
+            success(message, duration = 5000) {
+                this.show(message, 'success', duration);
+            }
+
+            error(message, duration = 5000) {
+                this.show(message, 'error', duration);
+            }
+
+            warning(message, duration = 5000) {
+                this.show(message, 'warning', duration);
+            }
+
+            info(message, duration = 5000) {
+                this.show(message, 'info', duration);
+            }
+        }
+
+        // Initialize global alert system
+        const alertSystem = new AlertNotification();
+
+        // Helper functions for easy access
+        function showAlert(message, type = 'success', duration = 5000) {
+            alertSystem.show(message, type, duration);
+        }
+
+        function showSuccess(message, duration = 5000) {
+            alertSystem.success(message, duration);
+        }
+
+        function showError(message, duration = 5000) {
+            alertSystem.error(message, duration);
+        }
+
+        function showWarning(message, duration = 5000) {
+            alertSystem.warning(message, duration);
+        }
+
+        function showInfo(message, duration = 5000) {
+            alertSystem.info(message, duration);
+        }
+
+        // Auto-show Django messages if they exist
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        showError('{{ message|escapejs }}');
+                    {% elif message.tags == 'warning' %}
+                        showWarning('{{ message|escapejs }}');
+                    {% elif message.tags == 'info' %}
+                        showInfo('{{ message|escapejs }}');
+                    {% else %}
+                        showSuccess('{{ message|escapejs }}');
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

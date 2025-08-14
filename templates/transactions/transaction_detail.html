@@ -1,0 +1,445 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Transaction Details - pipsmade{% endblock %}
+
+{% block page_title %}Transaction Details{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-receipt me-2"></i>Transaction #{{ transaction.id }}</h5>
+                    <span class="badge bg-{{ transaction.get_status_color }}">{{ transaction.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <!-- Transaction Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2"></i>Transaction Information</h6>
+                            <div class="info-card">
+                                <div class="info-row">
+                                    <span class="label">Type:</span>
+                                    <span class="value">
+                                        <i class="{{ transaction.get_type_icon }} me-2"></i>
+                                        {{ transaction.get_transaction_type_display }}
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Status:</span>
+                                    <span class="badge bg-{{ transaction.get_status_color }}">
+                                        {{ transaction.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Date:</span>
+                                    <span class="value">{{ transaction.created_at|date:"M d, Y H:i" }}</span>
+                                </div>
+                                {% if transaction.completed_at %}
+                                <div class="info-row">
+                                    <span class="label">Completed:</span>
+                                    <span class="value">{{ transaction.completed_at|date:"M d, Y H:i" }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-coins me-2"></i>Amount Details</h6>
+                            <div class="info-card">
+                                <div class="info-row">
+                                    <span class="label">Cryptocurrency:</span>
+                                    <span class="crypto-badge">{{ transaction.crypto_type }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Amount:</span>
+                                    <span class="amount">{{ transaction.amount|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                </div>
+                                {% if transaction.platform_fee > 0 %}
+                                <div class="info-row">
+                                    <span class="label">Platform Fee:</span>
+                                    <span class="fee">{{ transaction.platform_fee|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                </div>
+                                {% endif %}
+                                {% if transaction.network_fee > 0 %}
+                                <div class="info-row">
+                                    <span class="label">Network Fee:</span>
+                                    <span class="fee">{{ transaction.network_fee|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                </div>
+                                {% endif %}
+                                {% if transaction.platform_fee > 0 or transaction.network_fee > 0 %}
+                                <div class="info-row total-row">
+                                    <span class="label">Net Amount:</span>
+                                    <span class="net-amount">{{ transaction.net_amount|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blockchain Information -->
+                    {% if transaction.transaction_hash or transaction.from_address or transaction.to_address %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-link me-2"></i>Blockchain Information</h6>
+                            <div class="blockchain-info">
+                                {% if transaction.transaction_hash %}
+                                <div class="info-row">
+                                    <span class="label">Transaction Hash:</span>
+                                    <div class="hash-display">
+                                        <code>{{ transaction.transaction_hash }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="copyToClipboard('{{ transaction.transaction_hash }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if transaction.from_address %}
+                                <div class="info-row">
+                                    <span class="label">From Address:</span>
+                                    <div class="address-display">
+                                        <code>{{ transaction.from_address }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="copyToClipboard('{{ transaction.from_address }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if transaction.to_address %}
+                                <div class="info-row">
+                                    <span class="label">To Address:</span>
+                                    <div class="address-display">
+                                        <code>{{ transaction.to_address }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="copyToClipboard('{{ transaction.to_address }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Status Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-clock me-2"></i>Status Information</h6>
+                            <div class="status-timeline">
+                                <div class="timeline-item completed">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Transaction Created</h6>
+                                        <p>{{ transaction.created_at|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if transaction.status == 'pending' %}
+                                <div class="timeline-item active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Pending Review</h6>
+                                        <p>Your transaction is being reviewed by our team</p>
+                                    </div>
+                                </div>
+                                {% elif transaction.status == 'processing' %}
+                                <div class="timeline-item active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Processing</h6>
+                                        <p>Your transaction is being processed</p>
+                                    </div>
+                                </div>
+                                {% elif transaction.status == 'completed' %}
+                                <div class="timeline-item completed">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Completed</h6>
+                                        <p>{{ transaction.completed_at|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                </div>
+                                {% elif transaction.status == 'failed' or transaction.status == 'rejected' %}
+                                <div class="timeline-item failed">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>{{ transaction.get_status_display }}</h6>
+                                        {% if transaction.rejection_reason %}
+                                        <p>{{ transaction.rejection_reason }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    {% if transaction.user_notes or transaction.admin_notes %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-sticky-note me-2"></i>Notes</h6>
+                            <div class="notes-section">
+                                {% if transaction.user_notes %}
+                                <div class="note-item">
+                                    <strong>Your Notes:</strong>
+                                    <p>{{ transaction.user_notes }}</p>
+                                </div>
+                                {% endif %}
+                                {% if transaction.admin_notes %}
+                                <div class="note-item">
+                                    <strong>Admin Notes:</strong>
+                                    <p>{{ transaction.admin_notes }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="{% url 'transactions' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                        </a>
+                        {% if transaction.transaction_hash %}
+                        <button class="btn btn-outline-primary" onclick="viewOnBlockchain()">
+                            <i class="fas fa-external-link-alt me-2"></i>View on Blockchain
+                        </button>
+                        {% endif %}
+                        {% if transaction.status == 'pending' and transaction.transaction_type == 'withdrawal' %}
+                        <button class="btn btn-outline-danger" onclick="cancelTransaction()">
+                            <i class="fas fa-times me-2"></i>Cancel Request
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-row .value {
+    color: #6c757d;
+}
+
+.total-row {
+    border-top: 2px solid #dee2e6;
+    padding-top: 12px;
+    font-weight: 600;
+}
+
+.crypto-badge {
+    background: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.amount, .fee, .net-amount {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.net-amount {
+    color: #28a745;
+}
+
+.blockchain-info {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.hash-display, .address-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hash-display code, .address-display code {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+    flex: 1;
+}
+
+.status-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dee2e6;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: #28a745;
+    box-shadow: 0 0 0 2px #28a745;
+}
+
+.timeline-item.active .timeline-marker {
+    background: #ffc107;
+    box-shadow: 0 0 0 2px #ffc107;
+}
+
+.timeline-item.failed .timeline-marker {
+    background: #dc3545;
+    box-shadow: 0 0 0 2px #dc3545;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.timeline-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.notes-section {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.note-item {
+    margin-bottom: 15px;
+}
+
+.note-item:last-child {
+    margin-bottom: 0;
+}
+
+.note-item strong {
+    color: #495057;
+}
+
+.note-item p {
+    margin: 5px 0 0 0;
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .hash-display, .address-display {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showSuccess('Copied to clipboard!');
+    }).catch(function() {
+        showError('Failed to copy to clipboard');
+    });
+}
+
+function viewOnBlockchain() {
+    const hash = '{{ transaction.transaction_hash }}';
+    const crypto = '{{ transaction.crypto_type }}';
+    
+    let url = '';
+    switch(crypto) {
+        case 'BTC':
+            url = `https://blockstream.info/tx/${hash}`;
+            break;
+        case 'ETH':
+        case 'USDT':
+            url = `https://etherscan.io/tx/${hash}`;
+            break;
+        case 'BNB':
+            url = `https://bscscan.com/tx/${hash}`;
+            break;
+        default:
+            showInfo('Blockchain explorer not configured for this cryptocurrency');
+            return;
+    }
+    
+    window.open(url, '_blank');
+}
+
+function cancelTransaction() {
+    if (confirm('Are you sure you want to cancel this withdrawal request?')) {
+        showInfo('Cancellation feature coming soon!');
+    }
+}
+</script>
+{% endblock %}

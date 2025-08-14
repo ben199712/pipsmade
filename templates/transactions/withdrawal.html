@@ -1,0 +1,340 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Withdrawal - pipsmade{% endblock %}
+
+{% block page_title %}Crypto Withdrawal{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Withdrawal Instructions -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Important Withdrawal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Security Notice</h6>
+                        <ul class="mb-0">
+                            <li>Double-check the destination address before submitting</li>
+                            <li>Withdrawals are manually reviewed for security</li>
+                            <li>Processing time: 1-24 hours</li>
+                            <li>Minimum withdrawal amounts apply</li>
+                            <li>Network fees will be deducted from your withdrawal</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Balances -->
+            {% if user_wallets %}
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-wallet me-2"></i>Available Balances</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for wallet in user_wallets %}
+                        <div class="col-md-4">
+                            <div class="balance-card">
+                                <div class="crypto-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="balance-info">
+                                    <h6>{{ wallet.get_crypto_type_display }}</h6>
+                                    <p class="balance">{{ wallet.balance|floatformat:8 }}</p>
+                                    <small class="text-muted">{{ wallet.crypto_type }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Withdrawal Form -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-minus-circle me-2"></i>Submit Withdrawal Request</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_wallets %}
+                    <form method="post" id="withdrawalForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cryptocurrency</label>
+                                {{ form.crypto_type }}
+                                <div class="form-text">Select crypto to withdraw</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                <div class="input-group">
+                                    {{ form.amount }}
+                                    <button class="btn btn-outline-secondary" type="button" id="maxButton">
+                                        Max
+                                    </button>
+                                </div>
+                                <div class="form-text" id="availableBalance">Enter withdrawal amount</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Network</label>
+                                {{ form.network }}
+                                <div class="form-text">{{ form.network.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Destination Address</label>
+                                {{ form.destination_address }}
+                                <div class="form-text">{{ form.destination_address.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Confirm Destination Address</label>
+                                {{ form.confirm_address }}
+                                <div class="form-text">{{ form.confirm_address.help_text }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fee Calculator -->
+                        <div class="mt-4">
+                            <div class="fee-calculator" id="feeCalculator" style="display: none;">
+                                <h6>Withdrawal Summary</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="fee-item">
+                                            <span>Withdrawal Amount:</span>
+                                            <span id="withdrawalAmount">0</span>
+                                        </div>
+                                        <div class="fee-item">
+                                            <span>Platform Fee (2%):</span>
+                                            <span id="platformFee">0</span>
+                                        </div>
+                                        <div class="fee-item">
+                                            <span>Network Fee:</span>
+                                            <span id="networkFee">~0.001</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="fee-total">
+                                            <span>You will receive:</span>
+                                            <span id="netAmount">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmWithdrawal" required>
+                                <label class="form-check-label" for="confirmWithdrawal">
+                                    I confirm that the destination address is correct and I understand that 
+                                    cryptocurrency transactions are irreversible.
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Submit Withdrawal Request
+                            </button>
+                            <a href="{% url 'transactions' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                            </a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-wallet fa-3x text-muted mb-3"></i>
+                        <h5>No Available Balance</h5>
+                        <p class="text-muted">You don't have any cryptocurrency balance to withdraw.</p>
+                        <a href="{% url 'deposit' %}" class="btn btn-primary">Make a Deposit</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.balance-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.balance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.crypto-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #ffc107;
+}
+
+.balance {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 5px 0;
+    color: #333;
+}
+
+.fee-calculator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.fee-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.fee-total {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.fee-total span:first-child {
+    font-weight: 600;
+    color: #495057;
+}
+
+.fee-total span:last-child {
+    font-weight: 700;
+    font-size: 18px;
+    color: #28a745;
+}
+
+.input-group .btn {
+    border-color: #ced4da;
+}
+
+@media (max-width: 768px) {
+    .fee-calculator .row {
+        flex-direction: column;
+    }
+    
+    .fee-total {
+        margin-top: 15px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cryptoSelect = document.getElementById('cryptoType');
+    const amountInput = document.getElementById('withdrawAmount');
+    const maxButton = document.getElementById('maxButton');
+    const availableBalanceText = document.getElementById('availableBalance');
+    const feeCalculator = document.getElementById('feeCalculator');
+    const confirmCheckbox = document.getElementById('confirmWithdrawal');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // User balances (from Django context)
+    const userBalances = {
+        {% for wallet in user_wallets %}
+        '{{ wallet.crypto_type }}': {{ wallet.balance }},
+        {% endfor %}
+    };
+    
+    // Update available balance when crypto changes
+    cryptoSelect.addEventListener('change', function() {
+        const selectedCrypto = this.value;
+        if (selectedCrypto && userBalances[selectedCrypto]) {
+            const balance = userBalances[selectedCrypto];
+            availableBalanceText.textContent = `Available: ${balance.toFixed(8)} ${selectedCrypto}`;
+            maxButton.disabled = false;
+        } else {
+            availableBalanceText.textContent = 'Select cryptocurrency first';
+            maxButton.disabled = true;
+        }
+        updateFeeCalculator();
+    });
+    
+    // Max button functionality
+    maxButton.addEventListener('click', function() {
+        const selectedCrypto = cryptoSelect.value;
+        if (selectedCrypto && userBalances[selectedCrypto]) {
+            amountInput.value = userBalances[selectedCrypto].toFixed(8);
+            updateFeeCalculator();
+        }
+    });
+    
+    // Update fee calculator when amount changes
+    amountInput.addEventListener('input', updateFeeCalculator);
+    
+    // Enable/disable submit button based on checkbox
+    confirmCheckbox.addEventListener('change', function() {
+        submitBtn.disabled = !this.checked;
+    });
+    
+    function updateFeeCalculator() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const selectedCrypto = cryptoSelect.value;
+        
+        if (amount > 0 && selectedCrypto) {
+            const platformFee = amount * 0.02; // 2% platform fee
+            const networkFee = 0.001; // Estimated network fee
+            const netAmount = amount - platformFee - networkFee;
+            
+            document.getElementById('withdrawalAmount').textContent = `${amount.toFixed(8)} ${selectedCrypto}`;
+            document.getElementById('platformFee').textContent = `${platformFee.toFixed(8)} ${selectedCrypto}`;
+            document.getElementById('networkFee').textContent = `${networkFee.toFixed(8)} ${selectedCrypto}`;
+            document.getElementById('netAmount').textContent = `${Math.max(0, netAmount).toFixed(8)} ${selectedCrypto}`;
+            
+            feeCalculator.style.display = 'block';
+        } else {
+            feeCalculator.style.display = 'none';
+        }
+    }
+    
+    // Form submission
+    document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+        const amount = parseFloat(amountInput.value) || 0;
+        const selectedCrypto = cryptoSelect.value;
+        const destinationAddr = document.getElementById('destinationAddress').value;
+        const confirmAddr = document.getElementById('confirmAddress').value;
+        
+        if (!selectedCrypto || amount <= 0 || !destinationAddr || !confirmAddr) {
+            e.preventDefault();
+            showError('Please fill in all required fields!');
+            return;
+        }
+        
+        if (destinationAddr !== confirmAddr) {
+            e.preventDefault();
+            showError('Destination addresses do not match!');
+            return;
+        }
+        
+        if (userBalances[selectedCrypto] && amount > userBalances[selectedCrypto]) {
+            e.preventDefault();
+            showError('Insufficient balance!');
+            return;
+        }
+        
+        showInfo('Submitting withdrawal request...', 3000);
+    });
+});
+</script>
+{% endblock %}

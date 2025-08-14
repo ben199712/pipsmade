@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alert Demo - pipsmade{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bell me-2"></i>Alert Notification Demo</h3>
+                    <p class="mb-0">Test the beautiful alert notification system</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="showSuccess('Investment created successfully! Your portfolio has been updated.')">
+                                <i class="fas fa-check-circle me-2"></i>Success Alert
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-danger w-100" onclick="showError('Investment failed! Insufficient funds in your account.')">
+                                <i class="fas fa-exclamation-circle me-2"></i>Error Alert
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-warning w-100" onclick="showWarning('Your investment is about to mature in 24 hours.')">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Warning Alert
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-info w-100" onclick="showInfo('New investment plans are now available for your review.')">
+                                <i class="fas fa-info-circle me-2"></i>Info Alert
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary w-100" onclick="showMultipleAlerts()">
+                                <i class="fas fa-layer-group me-2"></i>Show Multiple Alerts
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-secondary w-100" onclick="showCustomAlert()">
+                                <i class="fas fa-cog me-2"></i>Custom Duration Alert (10 seconds)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5>Features:</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Beautiful gradient backgrounds</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Smooth slide-in animations</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Auto-disappear after 5 seconds</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Progress bar showing time remaining</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Click to close manually</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Queue system for multiple alerts</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Responsive design</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Shimmer effect</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showMultipleAlerts() {
+    showSuccess('First alert: Operation completed successfully!');
+    setTimeout(() => showWarning('Second alert: Please review your settings.'), 500);
+    setTimeout(() => showInfo('Third alert: New features are available.'), 1000);
+    setTimeout(() => showError('Fourth alert: This is just a demo error.'), 1500);
+}
+
+function showCustomAlert() {
+    showSuccess('This alert will stay for 10 seconds!', 10000);
+}
+</script>
+{% endblock %}

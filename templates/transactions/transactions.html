@@ -1,0 +1,306 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Transactions - pipsmade{% endblock %}
+
+{% block page_title %}Transaction History{% endblock %}
+
+{% block content %}
+    <!-- Transaction Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-success">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ total_deposits|floatformat:8 }}</h3>
+                    <p>Total Deposits</p>
+                    <span class="stats-change positive">All time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ total_withdrawals|floatformat:8 }}</h3>
+                    <p>Total Withdrawals</p>
+                    <span class="stats-change neutral">All time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ pending_transactions }}</h3>
+                    <p>Pending</p>
+                    <span class="stats-change neutral">Awaiting approval</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon bg-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ user_wallets.count }}</h3>
+                    <p>Active Wallets</p>
+                    <span class="stats-change positive">{{ crypto_wallets.count }} available</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-plus-circle me-2"></i>Quick Deposit</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>Add funds to your account using cryptocurrency</p>
+                    <a href="{% url 'deposit' %}" class="btn btn-success">
+                        <i class="fas fa-arrow-down me-2"></i>Make Deposit
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-minus-circle me-2"></i>Quick Withdrawal</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>Withdraw your funds to external wallet</p>
+                    <a href="{% url 'withdrawal' %}" class="btn btn-warning">
+                        <i class="fas fa-arrow-up me-2"></i>Make Withdrawal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Balances -->
+    {% if user_wallets %}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-wallet me-2"></i>Your Wallet Balances</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for wallet in user_wallets %}
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="crypto-balance-card">
+                                <div class="crypto-icon">
+                                    <i class="{{ wallet.get_crypto_type_display|lower }}"></i>
+                                </div>
+                                <div class="crypto-info">
+                                    <h6>{{ wallet.get_crypto_type_display }}</h6>
+                                    <p class="balance">{{ wallet.balance|floatformat:8 }}</p>
+                                    <small class="text-muted">{{ wallet.crypto_type }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Transaction History -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Transaction History</h5>
+                    <div class="card-actions">
+                        <!-- Filter Form -->
+                        <form method="get" class="d-flex gap-2">
+                            <select name="type" class="form-select form-select-sm">
+                                <option value="">All Types</option>
+                                {% for value, label in transaction_types %}
+                                <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All Status</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Crypto</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="transaction-type">
+                                            <i class="{{ transaction.get_type_icon }} me-2"></i>
+                                            {{ transaction.get_transaction_type_display }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="amount">{{ transaction.amount|floatformat:8 }}</span>
+                                        {% if transaction.platform_fee > 0 %}
+                                        <small class="text-muted d-block">Fee: {{ transaction.platform_fee|floatformat:8 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="crypto-badge">{{ transaction.crypto_type }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ transaction.get_status_color }}">
+                                            {{ transaction.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="date">{{ transaction.created_at|date:"M d, Y" }}</span>
+                                        <small class="text-muted d-block">{{ transaction.created_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'transaction_detail' transaction.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Transaction pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h5>No Transactions Yet</h5>
+                        <p class="text-muted">Start by making your first deposit or investment.</p>
+                        <a href="{% url 'deposit' %}" class="btn btn-primary">Make First Deposit</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.crypto-balance-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.crypto-balance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.crypto-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #28a745;
+}
+
+.balance {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 5px 0;
+    color: #333;
+}
+
+.transaction-type {
+    display: flex;
+    align-items: center;
+}
+
+.crypto-badge {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.amount {
+    font-weight: 600;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .card-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .card-actions form {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

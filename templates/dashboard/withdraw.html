@@ -1,394 +1,274 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdraw - pipsmade</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/styles.css">
-</head>
-<body class="dashboard-page">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Withdraw - pipsmade{% endblock %}
+
+{% block page_title %}Withdraw Funds{% endblock %}
+
+{% block content %}
+    <!-- Balance Overview -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="stats-icon bg-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ total_balance|floatformat:2 }}</h3>
+                    <p>Available Balance</p>
+                    <span class="stats-change positive">{{ user_wallets.count }} wallets</span>
+                </div>
+            </div>
         </div>
-        <nav class="sidebar-nav">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard.html">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="investments.html">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>Investments</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="portfolio.html">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Portfolio</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="deposit.html">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Deposit</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="withdraw.html">
-                        <i class="fas fa-minus-circle"></i>
-                        <span>Withdraw</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="transactions.html">
-                        <i class="fas fa-history"></i>
-                        <span>Transaction History</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="support.html">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
-                <li class="nav-item mt-auto">
-                    <a class="nav-link logout" href="../index.html">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="fas fa-minus-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>${{ total_withdrawals|floatformat:2 }}</h3>
+                    <p>Total Withdrawals</p>
+                    <span class="stats-change neutral">All time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ pending_withdrawals }}</h3>
+                    <p>Pending Withdrawals</p>
+                    <span class="stats-change neutral">Awaiting approval</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Navigation -->
-        <nav class="top-nav">
-            <div class="nav-left">
-                <button class="sidebar-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h5 class="page-title">Withdraw Funds</h5>
-            </div>
-            <div class="nav-right">
-                <div class="notifications">
-                    <button class="btn btn-link">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
+    <!-- Available Balances -->
+    {% if user_wallets %}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-wallet me-2"></i>Available Balances</h5>
                 </div>
-                <div class="user-menu dropdown">
-                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <div class="user-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span>John Doe</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Withdraw Content -->
-        <div class="dashboard-content">
-            <!-- Balance Overview -->
-            <div class="row g-4 mb-4">
-                <div class="col-lg-4">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>$12,450.00</h3>
-                            <p>Available Balance</p>
-                            <span class="stats-change positive">+5.2%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-minus-circle"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>$2,500.00</h3>
-                            <p>Total Withdrawals</p>
-                            <span class="stats-change neutral">This Month</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>1-3 days</h3>
-                            <p>Processing Time</p>
-                            <span class="stats-change neutral">Average</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Withdrawal Form -->
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Withdrawal Request</h5>
-                            <div class="security-badge">
-                                <i class="fas fa-shield-alt me-1"></i>
-                                <span>Secure Transaction</span>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for wallet in user_wallets %}
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="crypto-balance-card">
+                                <div class="crypto-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="crypto-info">
+                                    <h6>{{ wallet.get_crypto_type_display }}</h6>
+                                    <p class="balance">{{ wallet.balance|floatformat:8 }}</p>
+                                    <small class="text-muted">{{ wallet.crypto_type }}</small>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <form id="withdrawForm">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Withdrawal Method</label>
-                                        <select class="form-select" id="withdrawMethod" required>
-                                            <option value="">Select method</option>
-                                            <option value="bank">Bank Transfer</option>
-                                            <option value="crypto">Cryptocurrency</option>
-                                            <option value="paypal">PayPal</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Amount</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">$</span>
-                                            <input type="number" class="form-control" id="withdrawAmount" min="100" step="0.01" required>
-                                            <button class="btn btn-outline-secondary" type="button" onclick="setMaxAmount()">Max</button>
-                                        </div>
-                                        <small class="text-muted">Minimum withdrawal: $100</small>
-                                    </div>
-                                </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
-                                <!-- Bank Transfer Form -->
-                                <div id="bankWithdrawForm" class="withdraw-form-section" style="display: none;">
-                                    <h6 class="mt-4 mb-3">Bank Account Details</h6>
-                                    <div class="saved-accounts mb-3">
-                                        <label class="form-label">Saved Accounts</label>
-                                        <select class="form-select" id="savedAccounts">
-                                            <option value="">Select saved account</option>
-                                            <option value="account1">Bank of America - ****1234</option>
-                                            <option value="account2">Chase Bank - ****5678</option>
-                                        </select>
-                                        <small class="text-muted">Or add new account below</small>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Account Holder Name</label>
-                                            <input type="text" class="form-control" placeholder="John Doe">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Bank Name</label>
-                                            <input type="text" class="form-control" placeholder="Bank of America">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Account Number</label>
-                                            <input type="text" class="form-control" placeholder="1234567890">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Routing Number</label>
-                                            <input type="text" class="form-control" placeholder="021000021">
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="saveAccount">
-                                                <label class="form-check-label" for="saveAccount">
-                                                    Save this account for future withdrawals
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Withdrawal Form -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-minus-circle me-2"></i>Withdrawal Request</h5>
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        <span>Secure Transaction</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if user_wallets %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important:</strong> Withdrawals are processed manually and may take 1-24 hours.
+                        Make sure your destination address is correct as transactions cannot be reversed.
+                    </div>
 
-                                <!-- Crypto Form -->
-                                <div id="cryptoWithdrawForm" class="withdraw-form-section" style="display: none;">
-                                    <h6 class="mt-4 mb-3">Cryptocurrency Withdrawal</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Select Cryptocurrency</label>
-                                            <select class="form-select">
-                                                <option value="btc">Bitcoin (BTC)</option>
-                                                <option value="eth">Ethereum (ETH)</option>
-                                                <option value="usdt">Tether (USDT)</option>
-                                                <option value="usdc">USD Coin (USDC)</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Network</label>
-                                            <select class="form-select">
-                                                <option value="mainnet">Bitcoin Mainnet</option>
-                                                <option value="lightning">Lightning Network</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label">Wallet Address</label>
-                                            <input type="text" class="form-control" placeholder="Enter your wallet address">
-                                            <small class="text-muted">Double-check your wallet address. Transactions cannot be reversed.</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- PayPal Form -->
-                                <div id="paypalWithdrawForm" class="withdraw-form-section" style="display: none;">
-                                    <h6 class="mt-4 mb-3">PayPal Withdrawal</h6>
-                                    <div class="row g-3">
-                                        <div class="col-12">
-                                            <label class="form-label">PayPal Email</label>
-                                            <input type="email" class="form-control" placeholder="your-email@example.com">
-                                            <small class="text-muted">Enter the email associated with your PayPal account</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Security Verification -->
-                                <div class="security-verification mt-4">
-                                    <h6>Security Verification</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">2FA Code</label>
-                                            <input type="text" class="form-control" placeholder="Enter 6-digit code" maxlength="6">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Password Confirmation</label>
-                                            <input type="password" class="form-control" placeholder="Confirm your password">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-minus-circle me-2"></i>Request Withdrawal
+                    <form method="post" id="withdrawForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cryptocurrency</label>
+                                {{ form.crypto_type }}
+                                <div class="form-text">Select cryptocurrency to withdraw</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                <div class="input-group">
+                                    {{ form.amount }}
+                                    <button class="btn btn-outline-secondary" type="button" id="maxButton">
+                                        Max
                                     </button>
                                 </div>
-                            </form>
+                                <div class="form-text" id="availableBalance">Enter withdrawal amount</div>
+                            </div>
                         </div>
+
+                        <div class="row g-3 mt-3">
+                            <div class="col-12">
+                                <label class="form-label">Network</label>
+                                {{ form.network }}
+                                <div class="form-text">{{ form.network.help_text }}</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Destination Address</label>
+                                {{ form.destination_address }}
+                                <div class="form-text">{{ form.destination_address.help_text }}</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Confirm Destination Address</label>
+                                {{ form.confirm_address }}
+                                <div class="form-text">{{ form.confirm_address.help_text }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Fee Calculator -->
+                        <div class="mt-4">
+                            <div class="fee-calculator" id="feeCalculator" style="display: none;">
+                                <h6>Withdrawal Summary</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="fee-item">
+                                            <span>Withdrawal Amount:</span>
+                                            <span id="withdrawalAmount">0</span>
+                                        </div>
+                                        <div class="fee-item">
+                                            <span>Platform Fee (2%):</span>
+                                            <span id="platformFee">0</span>
+                                        </div>
+                                        <div class="fee-item">
+                                            <span>Network Fee:</span>
+                                            <span id="networkFee">~0.001</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="fee-total">
+                                            <span>You will receive:</span>
+                                            <span id="netAmount">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmWithdrawal" required>
+                                <label class="form-check-label" for="confirmWithdrawal">
+                                    I confirm that the destination address is correct and I understand that
+                                    cryptocurrency transactions are irreversible.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Submit Withdrawal Request
+                            </button>
+                            <a href="{% url 'transactions' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                            </a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-wallet fa-3x text-muted mb-3"></i>
+                        <h5>No Available Balance</h5>
+                        <p class="text-muted">You don't have any cryptocurrency balance to withdraw.</p>
+                        <a href="{% url 'deposit' %}" class="btn btn-primary">Make a Deposit</a>
                     </div>
+                    {% endif %}
                 </div>
-                <div class="col-lg-4">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Withdrawal Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="withdrawal-summary">
-                                <div class="summary-item">
-                                    <span>Withdrawal Amount:</span>
-                                    <strong id="withdrawSummaryAmount">$0.00</strong>
-                                </div>
-                                <div class="summary-item">
-                                    <span>Processing Fee:</span>
-                                    <strong id="withdrawSummaryFee">$0.00</strong>
-                                </div>
-                                <div class="summary-item">
-                                    <span>You'll Receive:</span>
-                                    <strong id="withdrawSummaryTotal">$0.00</strong>
-                                </div>
-                                <div class="summary-item">
-                                    <span>Processing Time:</span>
-                                    <strong id="withdrawSummaryTime">-</strong>
-                                </div>
-                            </div>
-                            
-                            <div class="withdrawal-limits mt-4">
-                                <h6><i class="fas fa-info-circle me-2"></i>Withdrawal Limits</h6>
-                                <div class="limit-item">
-                                    <span>Daily Limit:</span>
-                                    <strong>$10,000</strong>
-                                </div>
-                                <div class="limit-item">
-                                    <span>Monthly Limit:</span>
-                                    <strong>$50,000</strong>
-                                </div>
-                                <div class="limit-item">
-                                    <span>Used Today:</span>
-                                    <strong>$0</strong>
-                                </div>
-                            </div>
+            </div>
+        </div>
 
-                            <div class="withdrawal-info mt-4">
-                                <h6><i class="fas fa-clock me-2"></i>Processing Times</h6>
-                                <ul class="processing-times">
-                                    <li>Bank Transfer: 1-3 business days</li>
-                                    <li>Cryptocurrency: 10-60 minutes</li>
-                                    <li>PayPal: 1-2 business days</li>
-                                </ul>
-                            </div>
-                        </div>
+        <div class="col-lg-4">
+            <!-- Withdrawal Info -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Withdrawal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="withdrawal-info">
+                        <h6><i class="fas fa-clock me-2"></i>Processing Times</h6>
+                        <ul class="processing-times">
+                            <li><strong>Cryptocurrency:</strong> 1-24 hours</li>
+                            <li><strong>Manual Review:</strong> All withdrawals</li>
+                            <li><strong>Security Check:</strong> Required</li>
+                        </ul>
                     </div>
 
-                    <!-- Recent Withdrawals -->
-                    <div class="chart-card mt-4">
-                        <div class="card-header">
-                            <h5>Recent Withdrawals</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="recent-withdrawals">
-                                <div class="withdrawal-item">
-                                    <div class="withdrawal-icon">
-                                        <i class="fas fa-university"></i>
-                                    </div>
-                                    <div class="withdrawal-info">
-                                        <h6>Bank Transfer</h6>
-                                        <small>Jan 15, 2024</small>
-                                    </div>
-                                    <div class="withdrawal-amount">
-                                        <div>$1,500.00</div>
-                                        <span class="badge bg-success">Completed</span>
-                                    </div>
-                                </div>
-                                <div class="withdrawal-item">
-                                    <div class="withdrawal-icon">
-                                        <i class="fab fa-bitcoin"></i>
-                                    </div>
-                                    <div class="withdrawal-info">
-                                        <h6>Bitcoin</h6>
-                                        <small>Jan 10, 2024</small>
-                                    </div>
-                                    <div class="withdrawal-amount">
-                                        <div>$800.00</div>
-                                        <span class="badge bg-warning">Processing</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="withdrawal-fees mt-4">
+                        <h6><i class="fas fa-percentage me-2"></i>Withdrawal Fees</h6>
+                        <ul class="fee-list">
+                            <li><strong>Bitcoin:</strong> 2.0%</li>
+                            <li><strong>Ethereum:</strong> 2.5%</li>
+                            <li><strong>USDT:</strong> 1.5%</li>
+                            <li><strong>Other Cryptos:</strong> 2.0%</li>
+                        </ul>
+                    </div>
+
+                    <div class="security-notice mt-4">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <strong>Security Notice:</strong> Always double-check your destination address.
+                            Cryptocurrency transactions cannot be reversed.
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/withdraw.js"></script>
-</body>
-</html>
+            <!-- Recent Withdrawals -->
+            {% if recent_withdrawals %}
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Recent Withdrawals</h5>
+                </div>
+                <div class="card-body">
+                    <div class="recent-withdrawals">
+                        {% for withdrawal in recent_withdrawals %}
+                        <div class="withdrawal-item">
+                            <div class="withdrawal-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="withdrawal-info">
+                                <h6>{{ withdrawal.crypto_type }}</h6>
+                                <small>{{ withdrawal.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="withdrawal-amount">
+                                <div>{{ withdrawal.amount }} {{ withdrawal.crypto_type }}</div>
+                                <span class="badge bg-{{ withdrawal.get_status_color }}">{{ withdrawal.get_status_display }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'transactions' %}" class="btn btn-sm btn-outline-primary">
+                            View All Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/withdraw.js' %}"></script>
+{% endblock %}
