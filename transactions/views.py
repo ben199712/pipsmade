@@ -231,6 +231,10 @@ def transaction_detail(request, transaction_id):
 @staff_member_required
 def admin_transactions(request):
     """Admin view for managing all transactions"""
+    print(f"DEBUG: admin_transactions view called")
+    print(f"DEBUG: Request method: {request.method}")
+    print(f"DEBUG: Request GET params: {request.GET}")
+    
     transactions = Transaction.objects.all().order_by('-created_at')
 
     # Filter by status
@@ -267,6 +271,10 @@ def admin_transactions(request):
         ).aggregate(total=Sum('amount'))['total'] or 0,
     }
 
+    print(f"DEBUG: Stats: {stats}")
+    print(f"DEBUG: Transaction count: {transactions.count()}")
+    print(f"DEBUG: Page count: {page_obj.paginator.num_pages}")
+
     context = {
         'page_obj': page_obj,
         'stats': stats,
@@ -277,19 +285,37 @@ def admin_transactions(request):
         'search_query': search,
     }
 
+    print(f"DEBUG: Rendering admin_transactions template")
     return render(request, 'transactions/admin_transactions.html', context)
 
 @staff_member_required
 def admin_approve_deposit(request, deposit_id):
     """Admin approve deposit request"""
+    print(f"DEBUG: admin_approve_deposit view called for deposit_id: {deposit_id}")
+    print(f"DEBUG: Request method: {request.method}")
+    print(f"DEBUG: Request user: {request.user}")
+    
     deposit_request = get_object_or_404(DepositRequest, id=deposit_id)
     transaction = deposit_request.transaction
+    
+    print(f"DEBUG: Found deposit_request: {deposit_request}")
+    print(f"DEBUG: Found transaction: {transaction}")
+    print(f"DEBUG: Transaction status: {transaction.status}")
 
     if request.method == 'POST':
+        print(f"DEBUG: Processing deposit {deposit_id}")
+        print(f"DEBUG: POST data: {request.POST}")
+        
         action = request.POST.get('action')
         admin_notes = request.POST.get('admin_notes', '')
 
+        print(f"DEBUG: Action: {action}")
+        print(f"DEBUG: Admin notes: {admin_notes}")
+        print(f"DEBUG: Action type: {type(action)}")
+        print(f"DEBUG: All POST keys: {list(request.POST.keys())}")
+
         if action == 'approve':
+            print(f"DEBUG: Approving deposit {deposit_id}")
             # Update transaction status
             transaction.status = 'completed'
             transaction.approved_by = request.user
@@ -323,8 +349,11 @@ def admin_approve_deposit(request, deposit_id):
             )
 
             messages.success(request, f'Deposit approved and {transaction.amount} {transaction.crypto_type} added to user wallet.')
+            print(f"DEBUG: Redirecting to admin_transactions")
+            return redirect('admin_transactions')
 
         elif action == 'reject':
+            print(f"DEBUG: Rejecting deposit {deposit_id}")
             transaction.status = 'rejected'
             transaction.approved_by = request.user
             transaction.approved_at = timezone.now()
@@ -336,9 +365,16 @@ def admin_approve_deposit(request, deposit_id):
             deposit_request.save()
 
             messages.warning(request, 'Deposit request rejected.')
+            print(f"DEBUG: Redirecting to admin_transactions")
+            return redirect('admin_transactions')
+        else:
+            print(f"DEBUG: Invalid action: {action}")
+            print(f"DEBUG: Action type: {type(action)}")
+            print(f"DEBUG: All POST keys: {list(request.POST.keys())}")
+            messages.error(request, f'Invalid action: {action}')
+            return redirect('admin_transactions')
 
-        return redirect('admin_transactions')
-
+    print(f"DEBUG: Rendering admin_approve_deposit template")
     context = {
         'deposit_request': deposit_request,
         'transaction': transaction,
@@ -349,16 +385,29 @@ def admin_approve_deposit(request, deposit_id):
 @staff_member_required
 def admin_process_withdrawal(request, withdrawal_id):
     """Admin process withdrawal request"""
+    print(f"DEBUG: admin_process_withdrawal view called for withdrawal_id: {withdrawal_id}")
+    print(f"DEBUG: Request method: {request.method}")
+    print(f"DEBUG: Request user: {request.user}")
+    
     withdrawal_request = get_object_or_404(WithdrawalRequest, id=withdrawal_id)
     transaction = withdrawal_request.transaction
+    
+    print(f"DEBUG: Found withdrawal_request: {withdrawal_request}")
+    print(f"DEBUG: Found transaction: {transaction}")
+    print(f"DEBUG: Transaction status: {transaction.status}")
 
     if request.method == 'POST':
         print(f"DEBUG: Processing withdrawal {withdrawal_id}")
         print(f"DEBUG: POST data: {request.POST}")
         print(f"DEBUG: Current transaction status: {transaction.status}")
+        
         action = request.POST.get('action')
         admin_notes = request.POST.get('admin_notes', '')
         transaction_hash = request.POST.get('transaction_hash', '')
+
+        print(f"DEBUG: Action: {action}")
+        print(f"DEBUG: Admin notes: {admin_notes}")
+        print(f"DEBUG: Transaction hash: {transaction_hash}")
 
         if action == 'approve':
             print(f"DEBUG: Approving withdrawal {withdrawal_id}")
@@ -414,8 +463,11 @@ def admin_process_withdrawal(request, withdrawal_id):
             )
 
             messages.success(request, f'Withdrawal approved! Deducted {transaction.amount} {transaction.crypto_type} from user wallet. New balance: {user_wallet.balance}')
+            print(f"DEBUG: Redirecting to admin_transactions")
+            return redirect('admin_transactions')
 
         elif action == 'complete':
+            print(f"DEBUG: Completing withdrawal {withdrawal_id}")
             # Mark as completed with transaction hash
             transaction.status = 'completed'
             transaction.transaction_hash = transaction_hash
@@ -438,8 +490,11 @@ def admin_process_withdrawal(request, withdrawal_id):
             )
 
             messages.success(request, 'Withdrawal marked as completed.')
+            print(f"DEBUG: Redirecting to admin_transactions")
+            return redirect('admin_transactions')
 
         elif action == 'reject':
+            print(f"DEBUG: Rejecting withdrawal {withdrawal_id}")
             transaction.status = 'rejected'
             transaction.approved_by = request.user
             transaction.approved_at = timezone.now()
@@ -451,9 +506,16 @@ def admin_process_withdrawal(request, withdrawal_id):
             withdrawal_request.save()
 
             messages.warning(request, 'Withdrawal request rejected.')
+            print(f"DEBUG: Redirecting to admin_transactions")
+            return redirect('admin_transactions')
+        else:
+            print(f"DEBUG: Invalid action: {action}")
+            print(f"DEBUG: Action type: {type(action)}")
+            print(f"DEBUG: All POST keys: {list(request.POST.keys())}")
+            messages.error(request, f'Invalid action: {action}')
+            return redirect('admin_transactions')
 
-        return redirect('admin_transactions')
-
+    print(f"DEBUG: Rendering admin_process_withdrawal template")
     context = {
         'withdrawal_request': withdrawal_request,
         'transaction': transaction,

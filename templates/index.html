@@ -198,79 +198,97 @@
                     <p class="section-subtitle">
                         Flexible investment plans designed to match your financial goals and risk tolerance
                     </p>
+                    {% if investment_plans and pricing_stats %}
+                    <div class="pricing-stats mb-4">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary mb-0">{{ pricing_stats.total_plans|default:"0" }}</h4>
+                                <small>Active Plans</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success mb-0">
+                                    {{ pricing_stats.min_roi|default:"0"|floatformat:1 }}%
+                                </h4>
+                                <small>Min Returns</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-info mb-0">
+                                    {{ pricing_stats.max_roi|default:"0"|floatformat:1 }}%
+                                </h4>
+                                <small>Max Returns</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="row g-4">
+                {% for plan in investment_plans %}
                 <div class="col-lg-4 col-md-6">
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <h4>Starter</h4>
-                            <div class="price">
-                                <span class="currency">$</span>
-                                <span class="amount">500</span>
-                                <span class="period">minimum</span>
-                            </div>
-                        </div>
-                        <div class="pricing-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Basic Portfolio Management</li>
-                                <li><i class="fas fa-check"></i> Monthly Reports</li>
-                                <li><i class="fas fa-check"></i> Email Support</li>
-                                <li><i class="fas fa-check"></i> 5-8% Expected Returns</li>
-                                <li><i class="fas fa-check"></i> Low Risk Strategy</li>
-                            </ul>
-                        </div>
-                        <a href="#" class="btn btn-outline-primary w-100">Get Started</a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="pricing-card featured">
+                    <div class="pricing-card {% if forloop.counter == 2 %}featured{% endif %}">
+                        {% if forloop.counter == 2 %}
                         <div class="popular-badge">Most Popular</div>
-                        <div class="pricing-header">
-                            <h4>Professional</h4>
-                            <div class="price">
+                        {% endif %}
+                        <div class="pricing-header text-center" style="text-align: center !important;">
+                            <div class="plan-type-icon" style="text-align: center !important; display: block !important;">
+                                {% if plan.plan_type == 'crypto' %}
+                                    <i class="fab fa-bitcoin"></i>
+                                {% elif plan.plan_type == 'stocks' %}
+                                    <i class="fas fa-chart-line"></i>
+                                {% elif plan.plan_type == 'forex' %}
+                                    <i class="fas fa-dollar-sign"></i>
+                                {% elif plan.plan_type == 'bonds' %}
+                                    <i class="fas fa-university"></i>
+                                {% else %}
+                                    <i class="fas fa-chart-pie"></i>
+                                {% endif %}
+                            </div>
+                            <h4 class="text-center" style="text-align: center !important; margin: 0 auto !important; display: block !important;">{{ plan.name|default:"Investment Plan" }}</h4>
+                            <p class="text-muted mb-2 text-center" style="text-align: center !important; margin: 0 auto !important; display: block !important;">{{ plan.description|default:"Professional investment opportunity"|truncatechars:60 }}</p>
+                            <div class="price text-center" style="text-align: center !important; margin: 20px auto !important; display: block !important;">
                                 <span class="currency">$</span>
-                                <span class="amount">2,500</span>
+                                <span class="amount">{{ plan.min_investment|default:"100"|floatformat:0 }}</span>
                                 <span class="period">minimum</span>
                             </div>
+                            {% if plan.max_investment %}
+                            <small class="text-muted text-center d-block" style="text-align: center !important; display: block !important; margin: 0 auto !important;">Up to ${{ plan.max_investment|floatformat:0 }}</small>
+                            {% endif %}
                         </div>
-                        <div class="pricing-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Advanced Portfolio Management</li>
-                                <li><i class="fas fa-check"></i> Weekly Reports</li>
-                                <li><i class="fas fa-check"></i> Priority Support</li>
-                                <li><i class="fas fa-check"></i> 8-12% Expected Returns</li>
-                                <li><i class="fas fa-check"></i> Medium Risk Strategy</li>
-                                <li><i class="fas fa-check"></i> Personal Account Manager</li>
+                        <div class="pricing-features" style="text-align: center !important;">
+                            <ul style="text-align: center !important; margin: 0 auto !important;">
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-check"></i> {{ plan.get_plan_type_display|default:"Investment" }} Investment</li>
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-calendar"></i> {{ plan.duration_days|default:"30" }} Days Duration</li>
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-percentage"></i> {{ plan.min_roi_percentage|default:"0"|floatformat:1 }}% - {{ plan.max_roi_percentage|default:"0"|floatformat:1 }}% Expected Returns</li>
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-shield-alt"></i> 
+                                    <span class="risk-badge {{ plan.risk_level|default:'medium' }}">{{ plan.get_risk_level_display|default:"Medium Risk" }}</span>
+                                </li>
+                                {% if plan.features %}
+                                    {% for feature in plan.features %}
+                                    <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-check"></i> {{ feature|default:"Feature" }}</li>
+                                    {% endfor %}
+                                {% endif %}
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-users"></i> Professional Management</li>
+                                <li style="text-align: center !important; justify-content: center !important; display: flex !important;"><i class="fas fa-headset"></i> 24/7 Support</li>
                             </ul>
                         </div>
-                        <a href="#" class="btn btn-primary w-100">Get Started</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'investments' %}" class="btn {% if forloop.counter == 2 %}btn-primary{% else %}btn-outline-primary{% endif %} w-100">Invest Now</a>
+                        {% else %}
+                            <a href="{% url 'signup' %}" class="btn {% if forloop.counter == 2 %}btn-primary{% else %}btn-outline-primary{% endif %} w-100">Get Started</a>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <h4>Elite</h4>
-                            <div class="price">
-                                <span class="currency">$</span>
-                                <span class="amount">10,000</span>
-                                <span class="period">minimum</span>
-                            </div>
-                        </div>
-                        <div class="pricing-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Premium Portfolio Management</li>
-                                <li><i class="fas fa-check"></i> Daily Reports</li>
-                                <li><i class="fas fa-check"></i> 24/7 VIP Support</li>
-                                <li><i class="fas fa-check"></i> 12-18% Expected Returns</li>
-                                <li><i class="fas fa-check"></i> High Yield Strategy</li>
-                                <li><i class="fas fa-check"></i> Dedicated Trading Team</li>
-                                <li><i class="fas fa-check"></i> Custom Investment Strategy</li>
-                            </ul>
-                        </div>
-                        <a href="#" class="btn btn-outline-primary w-100">Get Started</a>
+                {% empty %}
+                <!-- Fallback plans if no investment plans exist -->
+                <div class="col-12 text-center">
+                    <div class="no-plans-message">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h4>Investment Plans Coming Soon</h4>
+                        <p class="text-muted">We're currently setting up our investment plans. Check back soon for exciting investment opportunities!</p>
+                        <a href="{% url 'signup' %}" class="btn btn-primary">Get Notified</a>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </section>
@@ -530,4 +548,246 @@
     </section>
 {% endblock content %}
 
+<style>
+/* Enhanced Dynamic Pricing Styles - Complete Centering Fix */
+.pricing-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-align: center !important;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.featured {
+    border-color: #007bff;
+    position: relative;
+}
+
+/* Force Center ALL Pricing Card Content */
+.pricing-card,
+.pricing-card *,
+.pricing-card .pricing-header,
+.pricing-card .pricing-header *,
+.pricing-card .pricing-features,
+.pricing-card .pricing-features *,
+.pricing-card .btn {
+    text-align: center !important;
+}
+
+/* Specific Element Centering */
+.pricing-header {
+    text-align: center !important;
+    width: 100%;
+}
+
+.pricing-header h4 {
+    text-align: center !important;
+    margin: 0 auto !important;
+    width: 100%;
+    display: block !important;
+}
+
+.pricing-header p {
+    text-align: center !important;
+    margin: 0 auto !important;
+    width: 100%;
+    display: block !important;
+}
+
+.pricing-header .price {
+    text-align: center !important;
+    margin: 20px auto !important;
+    width: 100%;
+    display: block !important;
+}
+
+.pricing-header small {
+    text-align: center !important;
+    display: block !important;
+    margin: 0 auto !important;
+    width: 100%;
+}
+
+/* Plan Type Icon Centering */
+.plan-type-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #007bff;
+    text-align: center !important;
+    display: block !important;
+    width: 100%;
+}
+
+/* Pricing Features Complete Centering */
+.pricing-features {
+    text-align: center !important;
+    width: 100%;
+}
+
+.pricing-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    text-align: center !important;
+    width: 100%;
+}
+
+.pricing-features li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100%;
+}
+
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.pricing-features i {
+    color: #28a745;
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+/* Button Centering */
+.pricing-card .btn {
+    text-align: center !important;
+    display: block !important;
+    margin: 0 auto !important;
+    width: 100%;
+}
+
+/* Pricing Stats Section */
+.pricing-stats {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.pricing-stats h4 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.pricing-stats small {
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pricing-card .price {
+    margin: 20px 0;
+}
+
+.pricing-card .price .amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #007bff;
+}
+
+.pricing-card .price .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.pricing-card .price .period {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.pricing-card .price small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+}
+
+.popular-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Risk Level Badges */
+.risk-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.risk-badge.low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.risk-badge.medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.risk-badge.high {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pricing-card {
+        margin-bottom: 20px;
+    }
+    
+    .pricing-card .price .amount {
+        font-size: 2rem;
+    }
+    
+    .popular-badge {
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.7rem;
+    }
+}
+
+/* No Plans Message */
+.no-plans-message {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 40px 20px;
+    border: 2px dashed #dee2e6;
+}
+
+.no-plans-message i {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-plans-message h4 {
+    color: #495057;
+    margin-bottom: 15px;
+}
+
+.no-plans-message p {
+    margin-bottom: 25px;
+    font-size: 1.1rem;
+}
+</style>
     

@@ -1,0 +1,354 @@
+/* Enhanced Dashboard Styles */
+
+/* Gradient Stats Cards */
+.stats-card.gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card.gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card.gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card.gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Enhanced Cards */
+.enhanced-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.enhanced-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.enhanced-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #28a745, #ffc107);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.enhanced-card:hover::before {
+    opacity: 1;
+}
+
+/* Interactive Wallet Cards */
+.crypto-balance-card.interactive-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.crypto-balance-card.interactive-card:hover {
+    border-color: #007bff;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,123,255,0.15);
+}
+
+.crypto-balance-card.interactive-card.selected {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+}
+
+.crypto-balance-card .card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,123,255,0.9);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.crypto-balance-card.interactive-card:hover .card-overlay {
+    opacity: 1;
+}
+
+/* Crypto Icons */
+.crypto-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.crypto-icon.crypto-btc {
+    background: linear-gradient(135deg, #f7931a 0%, #e6820a 100%);
+    color: white;
+}
+
+.crypto-icon.crypto-eth {
+    background: linear-gradient(135deg, #627eea 0%, #4f6bd5 100%);
+    color: white;
+}
+
+.crypto-icon.crypto-usdt {
+    background: linear-gradient(135deg, #26a17b 0%, #1e8a66 100%);
+    color: white;
+}
+
+.crypto-icon.crypto-bnb {
+    background: linear-gradient(135deg, #f3ba2f 0%, #e0a800 100%);
+    color: white;
+}
+
+/* Balance Actions */
+.balance-actions {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.crypto-balance-card:hover .balance-actions {
+    opacity: 1;
+}
+
+/* Support Options */
+.support-option {
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.support-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.support-option .support-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+    transition: all 0.3s ease;
+}
+
+.support-option:hover .support-icon {
+    transform: scale(1.1);
+}
+
+.support-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 10px 0;
+}
+
+.support-status.online {
+    background: #d4edda;
+    color: #155724;
+}
+
+.support-status.offline {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.support-features {
+    margin: 15px 0;
+    text-align: left;
+}
+
+.support-features small {
+    display: block;
+    margin-bottom: 5px;
+    color: #6c757d;
+}
+
+/* Fee Calculator */
+.fee-calculator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.fee-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.fee-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 18px;
+    color: #28a745;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #28a745;
+}
+
+/* Charts in Stats Cards */
+.stats-chart {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    opacity: 0.3;
+}
+
+/* Quick Actions */
+.quick-actions {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-top: 3px solid #007bff;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .stats-card {
+        margin-bottom: 20px;
+    }
+    
+    .crypto-balance-card {
+        margin-bottom: 15px;
+    }
+    
+    .support-option {
+        margin-bottom: 20px;
+    }
+    
+    .enhanced-card:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .enhanced-card {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .fee-calculator {
+        background: #4a5568;
+        border-color: #718096;
+    }
+    
+    .quick-actions {
+        background: #4a5568;
+        border-color: #63b3ed;
+    }
+}

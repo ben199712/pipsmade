@@ -3,31 +3,125 @@
 
 {% block title %}Support - pipsmade{% endblock %}
 
-{% block page_title %}Support Center{% endblock %}
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-headset me-2 text-primary"></i>
+        Support Center
+        {% if stats.open_tickets > 0 %}
+        <span class="badge bg-warning ms-2">{{ stats.open_tickets }} open tickets</span>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block content %}
-            <!-- Support Options -->
-            <div class="row g-4 mb-4">
-                <div class="col-lg-4 col-md-6">
-                    <div class="support-option">
-                        <div class="support-icon">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <h5>Live Chat</h5>
-                        <p>Get instant help from our support team</p>
-                        <div class="support-status online">
-                            <i class="fas fa-circle"></i>
-                            <span>Online</span>
-                        </div>
-                        <button class="btn btn-primary w-100" onclick="startLiveChat()">
-                            Start Chat
-                        </button>
-                    </div>
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Support Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card gradient-primary">
+                <div class="stats-icon">
+                    <i class="fas fa-ticket-alt"></i>
                 </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="support-option">
-                        <div class="support-icon">
-                            <i class="fas fa-envelope"></i>
+                <div class="stats-info">
+                    <h3>{{ stats.total_tickets }}</h3>
+                    <p>Total Tickets</p>
+                    <span class="stats-change positive">All time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card gradient-warning">
+                <div class="stats-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ stats.open_tickets }}</h3>
+                    <p>Open Tickets</p>
+                    <span class="stats-change {% if stats.open_tickets > 0 %}warning{% else %}positive{% endif %}">
+                        {% if stats.open_tickets > 0 %}Needs attention{% else %}All resolved{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card gradient-success">
+                <div class="stats-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ stats.resolved_tickets }}</h3>
+                    <p>Resolved Tickets</p>
+                    <span class="stats-change positive">Completed</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card gradient-info">
+                <div class="stats-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>24/7</h3>
+                    <p>Support Available</p>
+                    <span class="stats-change positive">Always here</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Options -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="support-option enhanced-card">
+                <div class="support-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h5>Create New Ticket</h5>
+                <p>Submit a detailed support request for complex issues</p>
+                <div class="support-features">
+                    <small><i class="fas fa-check me-1"></i>File attachments</small><br>
+                    <small><i class="fas fa-check me-1"></i>Priority levels</small><br>
+                    <small><i class="fas fa-check me-1"></i>Full conversation history</small>
+                </div>
+                <a href="{% url 'support:create_ticket' %}" class="btn btn-primary w-100 mt-3">
+                    <i class="fas fa-plus me-2"></i>Create Ticket
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="support-option enhanced-card">
+                <div class="support-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h5>Live Chat</h5>
+                <p>Get instant help from our support team</p>
+                <div class="support-status online">
+                    <i class="fas fa-circle"></i>
+                    <span>Online</span>
+                </div>
+                <div class="support-features">
+                    <small><i class="fas fa-clock me-1"></i>Average response: 2 minutes</small><br>
+                    <small><i class="fas fa-users me-1"></i>Available 24/7</small>
+                </div>
+                <button class="btn btn-success w-100 mt-3" onclick="startLiveChat()">
+                    <i class="fas fa-comments me-2"></i>Start Chat
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="support-option enhanced-card">
+                <div class="support-icon">
+                    <i class="fas fa-envelope"></i>
                         </div>
                         <h5>Email Support</h5>
                         <p>Send us a detailed message</p>

@@ -3,73 +3,154 @@
 
 {% block title %}Withdraw - pipsmade{% endblock %}
 
-{% block page_title %}Withdraw Funds{% endblock %}
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-minus-circle me-2 text-warning"></i>
+        Withdraw Funds
+        {% if pending_withdrawals > 0 %}
+        <span class="badge bg-warning ms-2">{{ pending_withdrawals }} pending</span>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block content %}
-    <!-- Balance Overview -->
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Balance Overview with Enhanced Styling -->
     <div class="row g-4 mb-4">
         <div class="col-lg-4">
-            <div class="stats-card">
-                <div class="stats-icon bg-primary">
+            <div class="stats-card gradient-primary">
+                <div class="stats-icon">
                     <i class="fas fa-wallet"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_balance|floatformat:2 }}</h3>
+                    <h3 class="counter" data-target="{{ total_balance|floatformat:2 }}">${{ total_balance|floatformat:2 }}</h3>
                     <p>Available Balance</p>
-                    <span class="stats-change positive">{{ user_wallets.count }} wallets</span>
+                    <span class="stats-change positive">
+                        <i class="fas fa-coins me-1"></i>{{ user_wallets.count }} wallets
+                    </span>
+                </div>
+                <div class="stats-chart">
+                    <canvas id="balanceChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="stats-card">
-                <div class="stats-icon bg-warning">
-                    <i class="fas fa-minus-circle"></i>
+            <div class="stats-card gradient-warning">
+                <div class="stats-icon">
+                    <i class="fas fa-arrow-down"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_withdrawals|floatformat:2 }}</h3>
+                    <h3 class="counter" data-target="{{ total_withdrawals|floatformat:2 }}">${{ total_withdrawals|floatformat:2 }}</h3>
                     <p>Total Withdrawals</p>
-                    <span class="stats-change neutral">All time</span>
+                    <span class="stats-change neutral">
+                        <i class="fas fa-calendar me-1"></i>All time
+                    </span>
+                </div>
+                <div class="stats-chart">
+                    <canvas id="withdrawalChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="stats-card">
-                <div class="stats-icon bg-info">
-                    <i class="fas fa-clock"></i>
+            <div class="stats-card gradient-info">
+                <div class="stats-icon">
+                    <i class="fas fa-hourglass-half"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>{{ pending_withdrawals }}</h3>
+                    <h3 class="counter" data-target="{{ pending_withdrawals }}">{{ pending_withdrawals }}</h3>
                     <p>Pending Withdrawals</p>
-                    <span class="stats-change neutral">Awaiting approval</span>
+                    <span class="stats-change {% if pending_withdrawals > 0 %}warning{% else %}positive{% endif %}">
+                        <i class="fas fa-{% if pending_withdrawals > 0 %}clock{% else %}check{% endif %} me-1"></i>
+                        {% if pending_withdrawals > 0 %}Awaiting approval{% else %}All processed{% endif %}
+                    </span>
+                </div>
+                <div class="stats-chart">
+                    <canvas id="pendingChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Available Balances -->
+    <!-- Available Balances with Enhanced Integration -->
     {% if user_wallets %}
     <div class="row g-4 mb-4">
         <div class="col-12">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5><i class="fas fa-wallet me-2"></i>Available Balances</h5>
+            <div class="dashboard-card enhanced-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5><i class="fas fa-wallet me-2 text-primary"></i>Available Balances</h5>
+                        <small class="text-muted">Click on a wallet to auto-fill withdrawal form</small>
+                    </div>
+                    <div class="balance-toggle">
+                        <button class="btn btn-sm btn-outline-secondary" id="toggleBalanceView">
+                            <i class="fas fa-eye"></i> Hide Balances
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
+                    <div class="row g-3" id="walletBalances">
                         {% for wallet in user_wallets %}
                         <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="crypto-balance-card">
-                                <div class="crypto-icon">
-                                    <i class="fas fa-coins"></i>
+                            <div class="crypto-balance-card interactive-card"
+                                 data-crypto="{{ wallet.crypto_type }}"
+                                 data-balance="{{ wallet.balance }}"
+                                 onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
+                                <div class="crypto-icon crypto-{{ wallet.crypto_type|lower }}">
+                                    {% if wallet.crypto_type == 'BTC' %}
+                                        <i class="fab fa-bitcoin"></i>
+                                    {% elif wallet.crypto_type == 'ETH' %}
+                                        <i class="fab fa-ethereum"></i>
+                                    {% elif wallet.crypto_type == 'USDT' %}
+                                        <i class="fas fa-dollar-sign"></i>
+                                    {% else %}
+                                        <i class="fas fa-coins"></i>
+                                    {% endif %}
                                 </div>
                                 <div class="crypto-info">
                                     <h6>{{ wallet.get_crypto_type_display }}</h6>
-                                    <p class="balance">{{ wallet.balance|floatformat:8 }}</p>
+                                    <p class="balance" data-balance="{{ wallet.balance }}">
+                                        <span class="balance-value">{{ wallet.balance|floatformat:8 }}</span>
+                                        <span class="balance-hidden" style="display: none;">••••••••</span>
+                                    </p>
                                     <small class="text-muted">{{ wallet.crypto_type }}</small>
+                                    <div class="balance-actions mt-2">
+                                        <button class="btn btn-sm btn-primary" onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
+                                            <i class="fas fa-arrow-right me-1"></i>Withdraw
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-overlay">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                    <span>Click to select</span>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions mt-4">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-outline-primary btn-sm" onclick="refreshBalances()">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh Balances
+                            </button>
+                            <a href="{% url 'deposit' %}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-plus me-1"></i>Add Funds
+                            </a>
+                            <a href="{% url 'transactions' %}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-history me-1"></i>Transaction History
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -271,4 +352,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/withdraw.js' %}"></script>
+<script src="{% static 'js/withdraw-enhanced.js' %}"></script>
 {% endblock %}

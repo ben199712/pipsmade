@@ -17,10 +17,11 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    
+    <link rel="stylesheet" href="{% static 'css/dashboard-enhanced.css' %}">
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     {% block extra_css %}{% endblock %}
 
     <!-- Alert Notification Styles -->
@@ -239,7 +240,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'support' %}active{% endif %}" href="{% url 'support' %}">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'support_center' %}active{% endif %}" href="{% url 'support:support_center' %}">
                         <i class="fas fa-headset"></i>
                         <span>Support</span>
                     </a>
