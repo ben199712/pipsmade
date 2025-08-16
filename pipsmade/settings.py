@@ -182,6 +182,31 @@ if os.environ.get('RENDER'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+elif os.environ.get('RAILWAY'):
+    # Railway.app specific settings
+    DEBUG = False
+    ALLOWED_HOSTS = ['.railway.app', '.up.railway.app']
+    
+    # Database - Use PostgreSQL on Railway
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE'),
+            'USER': os.environ.get('PGUSER'),
+            'PASSWORD': os.environ.get('PGPASSWORD'),
+            'HOST': os.environ.get('PGHOST'),
+            'PORT': os.environ.get('PGPORT'),
+        }
+    }
+    
+    # Static files
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATIC_URL = '/static/'
+    
+    # Security
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 else:
     # Local development settings
     DEBUG = True

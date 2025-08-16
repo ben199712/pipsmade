@@ -1,5 +1,10 @@
+# 🚀 pipsmade Investment Platform - Requirements
+# Railway.app compatible - full feature set
+
 Django==5.2.2
-Pillow==9.5.0
+Pillow==10.1.0
 python-dateutil==2.8.2
-pytz==2023.3
-gunicorn==20.1.0 
+pytz==2024.1
+gunicorn==21.2.0
+psycopg2-binary==2.9.7
+whitenoise==6.6.0 
