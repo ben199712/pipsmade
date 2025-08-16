@@ -158,3 +158,31 @@ SUPPORT_BUSINESS_HOURS = '24/7 Available'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Render.com Configuration
+import os
+if os.environ.get('RENDER'):
+    # Render.com specific settings
+    DEBUG = False
+    ALLOWED_HOSTS = ['.onrender.com']
+    
+    # Database - Use SQLite for Render.com free tier
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    
+    # Static files
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATIC_URL = '/static/'
+    
+    # Security
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Local development settings
+    DEBUG = True
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
