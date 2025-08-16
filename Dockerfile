@@ -20,14 +20,14 @@ RUN pip install -r requirements.txt
 # Copy project
 COPY . .
 
+# Make startup script executable
+RUN chmod +x start.sh
+
 # Collect static files
 RUN python manage.py collectstatic --no-input
 
 # Run migrations
 RUN python manage.py migrate
 
-# Expose port
-EXPOSE 8000
-
-# Start command
-CMD ["gunicorn", "pipsmade.wsgi:application", "--bind", "0.0.0.0:8000"] 
+# Start command using startup script
+CMD ["./start.sh"] 
