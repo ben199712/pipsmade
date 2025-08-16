@@ -1,0 +1,311 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Knowledge Base - pipsmade{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-book me-2 text-primary"></i>
+        Knowledge Base
+    </div>
+{% endblock %}
+
+{% block content %}
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Search and Filters -->
+    <div class="dashboard-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Search Articles</label>
+                    <input type="text" class="form-control" name="search" value="{{ search_query|default:'' }}" placeholder="Search for help articles...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Articles Grid -->
+    {% if page_obj %}
+        <div class="row g-4">
+            {% for article in page_obj %}
+            <div class="col-lg-4 col-md-6">
+                <div class="article-card dashboard-card h-100">
+                    <div class="card-body">
+                        <div class="article-meta mb-3">
+                            {% if article.category %}
+                                <span class="badge bg-primary mb-2">{{ article.category.name }}</span>
+                            {% endif %}
+                            {% if article.is_featured %}
+                                <span class="badge bg-warning mb-2">Featured</span>
+                            {% endif %}
+                        </div>
+                        
+                        <h5 class="card-title">
+                            <a href="{% url 'support:article_detail' article.slug %}" class="text-decoration-none">
+                                {{ article.title }}
+                            </a>
+                        </h5>
+                        
+                        <p class="card-text text-muted">
+                            {{ article.content|truncatechars:120 }}
+                        </p>
+                        
+                        <div class="article-stats d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>{{ article.view_count }} views
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-thumbs-up me-1"></i>{{ article.helpful_votes }} helpful
+                            </small>
+                        </div>
+                        
+                        <div class="article-footer mt-3">
+                            <small class="text-muted">
+                                Updated {{ article.updated_at|date:"M d, Y" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Articles pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- No Articles Found -->
+        <div class="dashboard-card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No articles found</h5>
+                <p class="text-muted">
+                    {% if search_query or selected_category %}
+                        Try adjusting your search criteria or 
+                        <a href="{% url 'support:knowledge_base' %}">view all articles</a>
+                    {% else %}
+                        No knowledge base articles are available at the moment.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Need More Help?</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Can't find what you're looking for?</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'support:faq_list' %}" class="btn btn-outline-info">
+                            <i class="fas fa-question-circle me-2"></i>Check FAQ
+                        </a>
+                        <a href="{% url 'support:create_ticket' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Create Support Ticket
+                        </a>
+                        <a href="{% url 'support:email_support' %}" class="btn btn-outline-success">
+                            <i class="fas fa-envelope me-2"></i>Email Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-bar me-2 text-primary"></i>Knowledge Base Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-primary mb-1">{{ page_obj.paginator.count|default:0 }}</h4>
+                                <small class="text-muted">Total Articles</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-warning mb-1">
+                                    {% for article in page_obj %}
+                                        {% if article.is_featured %}1{% endif %}
+                                    {% endfor %}
+                                </h4>
+                                <small class="text-muted">Featured</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-success mb-1">{{ categories.count }}</h4>
+                                <small class="text-muted">Categories</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Article Cards */
+.article-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.article-card .card-title a {
+    color: #495057;
+    transition: color 0.3s ease;
+}
+
+.article-card .card-title a:hover {
+    color: #007bff;
+}
+
+.article-meta .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.article-stats {
+    font-size: 0.8rem;
+}
+
+.article-footer {
+    border-top: 1px solid #e9ecef;
+    padding-top: 0.75rem;
+}
+
+/* Pagination */
+.pagination .page-link {
+    color: #007bff;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Stat Items */
+.stat-item h4 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+/* Quick Actions */
+.btn-outline-info:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .article-card {
+        margin-bottom: 1rem;
+    }
+    
+    .stat-item {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+// Auto-submit form when category changes
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.querySelector('select[name="category"]');
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    }
+});
+</script>
+{% endblock extra_js %} 

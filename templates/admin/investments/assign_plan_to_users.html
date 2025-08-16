@@ -1,0 +1,139 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}{{ media.css }}{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url 'admin:investments_admininvestmentplan_changelist' %}">Admin investment plans</a>
+&rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module aligned">
+        <h2>{{ title }}</h2>
+        
+        <div class="description">
+            <p><strong>Plan:</strong> {{ plan.name }}</p>
+            <p><strong>Type:</strong> {{ plan.get_plan_type_display }}</p>
+            <p><strong>ROI:</strong> {{ plan.roi_percentage }}%</p>
+            <p><strong>Duration:</strong> {{ plan.duration_days }} days</p>
+            <p><strong>Min Investment:</strong> ${{ plan.min_investment }}</p>
+            {% if plan.max_investment %}
+            <p><strong>Max Investment:</strong> ${{ plan.max_investment }}</p>
+            {% endif %}
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="investment_amount">Investment Amount ($):</label>
+                    <input type="number" name="investment_amount" id="investment_amount" 
+                           value="{{ plan.min_investment }}" step="0.01" min="{{ plan.min_investment }}"
+                           {% if plan.max_investment %}max="{{ plan.max_investment }}"{% endif %}
+                           required>
+                    <p class="help">Amount each user will invest (min: ${{ plan.min_investment }}{% if plan.max_investment %}, max: ${{ plan.max_investment }}{% endif %})</p>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label>Select Users:</label>
+                    <div class="user-selection" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                        {% for user in users %}
+                        <div class="user-item" style="margin-bottom: 8px;">
+                            <label style="display: flex; align-items: center;">
+                                <input type="checkbox" name="user_ids" value="{{ user.id }}" 
+                                       {% if user.id in existing_users %}disabled checked{% endif %}>
+                                <span style="margin-left: 8px;">
+                                    <strong>{{ user.username }}</strong> 
+                                    ({{ user.email }})
+                                    {% if user.id in existing_users %}
+                                    <span style="color: #999;">- Already has this plan</span>
+                                    {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                        {% empty %}
+                        <p>No users available.</p>
+                        {% endfor %}
+                    </div>
+                    <p class="help">Select users to assign this plan to. Users who already have this plan are disabled.</p>
+                </div>
+            </div>
+            
+            <div class="submit-row">
+                <input type="submit" value="Assign Plan to Selected Users" class="default" />
+                <a href="{% url 'admin:investments_admininvestmentplan_changelist' %}" class="button cancel-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.user-selection {
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.user-item label {
+    cursor: pointer;
+}
+
+.user-item input[type="checkbox"]:disabled + span {
+    opacity: 0.6;
+}
+
+.field-box {
+    margin-bottom: 20px;
+}
+
+.field-box label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.field-box input[type="number"] {
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.field-box .help {
+    color: #666;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.description {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007cba;
+}
+
+.description p {
+    margin: 5px 0;
+}
+</style>
+{% endblock %} 

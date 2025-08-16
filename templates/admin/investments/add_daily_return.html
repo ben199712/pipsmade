@@ -1,0 +1,401 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .return-form {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .return-form .form-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .return-form .form-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        
+        .return-form .form-body {
+            padding: 30px;
+        }
+        
+        .investment-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .investment-info h3 {
+            margin-top: 0;
+            color: #007bff;
+            font-size: 18px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-item strong {
+            min-width: 120px;
+            color: #495057;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-row label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-row input,
+        .form-row select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-row input:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        .return-type-toggle {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .return-type-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .return-type-toggle input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .return-type-toggle label:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .return-type-toggle input[type="radio"]:checked + label {
+            border-color: #007bff;
+            background: #e3f2fd;
+            color: #007bff;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .existing-returns {
+            margin-top: 30px;
+        }
+        
+        .existing-returns h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .returns-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .returns-table th,
+        .returns-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .returns-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .returns-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .profit {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .loss {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        @media (max-width: 768px) {
+            .return-form {
+                margin: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='investments' %}">Investments</a>
+    &rsaquo; <a href="{% url 'admin:investments_userinvestment_changelist' %}">User investments</a>
+    &rsaquo; Add Daily Return
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="return-form">
+    <div class="form-header">
+        <h1>{% trans "Add Daily Return" %}</h1>
+        <p>Add profit or loss for a specific investment on a specific date</p>
+    </div>
+    
+    <div class="form-body">
+        <!-- Investment Information -->
+        <div class="investment-info">
+            <h3>📊 Investment Details</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>User:</strong>
+                    <span>{{ investment.user.get_full_name|default:investment.user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Plan:</strong>
+                    <span>{{ investment.investment_plan.name }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Amount:</strong>
+                    <span>${{ investment.amount|floatformat:2 }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>ROI:</strong>
+                    <span>{{ investment.roi_percentage }}%</span>
+                </div>
+                <div class="info-item">
+                    <strong>Status:</strong>
+                    <span>{{ investment.get_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Current Value:</strong>
+                    <span>${{ investment.current_value|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Add Return Form -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <label for="date">📅 Date</label>
+                <input type="date" id="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div class="form-row">
+                <label for="daily_return">💰 Return Amount</label>
+                <input type="number" id="daily_return" name="daily_return" step="0.01" min="0" placeholder="Enter amount (e.g., 25.50)" required>
+                <small class="text-muted">Enter the absolute amount (will be converted to profit/loss based on selection below)</small>
+            </div>
+            
+            <div class="form-row">
+                <label>📈 Return Type</label>
+                <div class="return-type-toggle">
+                    <input type="radio" id="profit" name="return_type" value="profit" checked>
+                    <label for="profit">
+                        <span style="color: #28a745;">📈</span> Profit
+                    </label>
+                    
+                    <input type="radio" id="loss" name="return_type" value="loss">
+                    <label for="loss">
+                        <span style="color: #dc3545;">📉</span> Loss
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'admin:investments_userinvestment_changelist' %}" class="btn btn-secondary">
+                    <span>❌</span> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span>✅</span> Add Return
+                </button>
+            </div>
+        </form>
+        
+        <!-- Existing Returns -->
+        {% if existing_returns %}
+        <div class="existing-returns">
+            <h3>📋 Recent Returns for This Investment</h3>
+            <table class="returns-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Daily Return</th>
+                        <th>Return %</th>
+                        <th>Cumulative Return</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for return in existing_returns %}
+                    <tr>
+                        <td>{{ return.date|date:"M d, Y" }}</td>
+                        <td class="{% if return.daily_return >= 0 %}profit{% else %}loss{% endif %}">
+                            ${{ return.daily_return|floatformat:2 }}
+                        </td>
+                        <td>{{ return.return_percentage|floatformat:2 }}%</td>
+                        <td class="{% if return.cumulative_return >= 0 %}profit{% else %}loss{% endif %}">
+                            ${{ return.cumulative_return|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate return percentage when amount changes
+    const returnInput = document.getElementById('daily_return');
+    const investmentAmount = {{ investment.amount }};
+    
+    returnInput.addEventListener('input', function() {
+        const value = parseFloat(this.value) || 0;
+        if (value > 0 && investmentAmount > 0) {
+            const percentage = (value / investmentAmount) * 100;
+            // You could display this somewhere if needed
+            console.log('Return percentage:', percentage.toFixed(2) + '%');
+        }
+    });
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+});
+</script>
+{% endblock %} 

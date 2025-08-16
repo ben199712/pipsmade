@@ -62,6 +62,65 @@ class InvestmentPlan(models.Model):
         avg_roi = self.get_average_roi()
         return amount * (avg_roi / 100)
 
+class AdminInvestmentPlan(models.Model):
+    """Custom investment plans created by admin for specific users"""
+    PLAN_TYPES = [
+        ('crypto', 'Cryptocurrency'),
+        ('stocks', 'Stock Market'),
+        ('forex', 'Forex Trading'),
+        ('bonds', 'Bonds & Fixed Income'),
+        ('custom', 'Custom Plan'),
+    ]
+
+    RISK_LEVELS = [
+        ('low', 'Low Risk'),
+        ('medium', 'Medium Risk'),
+        ('high', 'High Risk'),
+    ]
+
+    # Plan Details
+    name = models.CharField(max_length=100, help_text="Custom name for this investment plan")
+    plan_type = models.CharField(max_length=20, choices=PLAN_TYPES, default='custom')
+    description = models.TextField(help_text="Description of this custom plan")
+    
+    # Investment Parameters
+    min_investment = models.DecimalField(max_digits=12, decimal_places=2, default=100.00)
+    max_investment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    
+    # ROI Configuration
+    roi_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Fixed ROI percentage for this plan"
+    )
+    
+    # Duration
+    duration_days = models.PositiveIntegerField(default=30, help_text="Duration in days")
+    risk_level = models.CharField(max_length=10, choices=RISK_LEVELS, default='medium')
+    
+    # Admin Info
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_plans', help_text="Admin who created this plan")
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, help_text="Whether this plan is active")
+    
+    # Custom Features
+    features = models.JSONField(default=list, blank=True, help_text="Custom features for this plan")
+    special_terms = models.TextField(blank=True, help_text="Special terms and conditions")
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.name} ({self.get_plan_type_display()}) - {self.roi_percentage}% ROI"
+    
+    def get_average_roi(self):
+        """Get ROI percentage (same as roi_percentage for admin plans)"""
+        return self.roi_percentage
+    
+    def calculate_potential_return(self, amount):
+        """Calculate potential return for given amount"""
+        return amount * (self.roi_percentage / 100)
+
 class UserInvestment(models.Model):
     """User's active investments"""
     STATUS_CHOICES = [
@@ -72,8 +131,9 @@ class UserInvestment(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investments')
-    investment_plan = models.ForeignKey(InvestmentPlan, on_delete=models.CASCADE)
-
+    investment_plan = models.ForeignKey(InvestmentPlan, on_delete=models.CASCADE, null=True, blank=True, help_text="Standard investment plan")
+    admin_investment_plan = models.ForeignKey(AdminInvestmentPlan, on_delete=models.CASCADE, null=True, blank=True, help_text="Admin-created custom investment plan")
+    
     # Investment Details
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     roi_percentage = models.DecimalField(max_digits=5, decimal_places=2)
@@ -85,9 +145,14 @@ class UserInvestment(models.Model):
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
 
-    # Calculated fields
-    expected_return = models.DecimalField(max_digits=12, decimal_places=2)
-    current_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # MANUAL FIELDS - Admin controls everything
+    expected_return = models.DecimalField(max_digits=12, decimal_places=2, help_text="Set manually by admin")
+    current_value = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Set manually by admin")
+    
+    # Manual profit entry by admin
+    manual_profit = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Profit added manually by admin")
+    total_profit = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Set manually by admin")
+    total_withdrawable = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Set manually by admin")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -96,43 +161,49 @@ class UserInvestment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} - {self.investment_plan.name} - ${self.amount}"
+        plan_name = self.investment_plan.name if self.investment_plan else self.admin_investment_plan.name
+        return f"{self.user.username} - {plan_name} - ${self.amount}"
+
+    def get_plan_name(self):
+        """Get the name of the investment plan (standard or admin-created)"""
+        if self.investment_plan:
+            return self.investment_plan.name
+        elif self.admin_investment_plan:
+            return self.admin_investment_plan.name
+        return "Unknown Plan"
+    
+    def get_plan_type(self):
+        """Get the type of the investment plan"""
+        if self.investment_plan:
+            return self.investment_plan.plan_type
+        elif self.admin_investment_plan:
+            return self.admin_investment_plan.plan_type
+        return "unknown"
 
     def save(self, *args, **kwargs):
+        # Ensure only one plan type is set
+        if self.investment_plan and self.admin_investment_plan:
+            raise ValueError("Cannot have both standard and admin investment plans")
+        
+        if not self.investment_plan and not self.admin_investment_plan:
+            raise ValueError("Must have either standard or admin investment plan")
+        
+        # Set end date based on plan duration (only if not set)
         if not self.end_date:
-            self.end_date = self.start_date + timedelta(days=self.investment_plan.duration_days)
+            if self.investment_plan:
+                self.end_date = self.start_date + timedelta(days=self.investment_plan.duration_days)
+            elif self.admin_investment_plan:
+                self.end_date = self.start_date + timedelta(days=self.admin_investment_plan.duration_days)
 
-        if not self.expected_return:
-            self.expected_return = self.amount * (self.roi_percentage / 100)
+        # Set ROI percentage from plan if not specified (only if not set)
+        if not self.roi_percentage:
+            if self.investment_plan:
+                self.roi_percentage = self.investment_plan.get_average_roi()
+            elif self.admin_investment_plan:
+                self.roi_percentage = self.admin_investment_plan.roi_percentage
 
-        # Update current value based on progress
-        self.update_current_value()
-
+        # NO AUTOMATIC CALCULATIONS - Admin controls everything
         super().save(*args, **kwargs)
-
-    def update_current_value(self):
-        """Update current value based on time progress and ROI"""
-        if self.status != 'active':
-            return
-
-        now = timezone.now()
-        total_duration = (self.end_date - self.start_date).total_seconds()
-        elapsed_duration = (now - self.start_date).total_seconds()
-
-        if elapsed_duration <= 0:
-            progress = 0
-        elif elapsed_duration >= total_duration:
-            progress = 1
-            self.status = 'completed'
-        else:
-            progress = elapsed_duration / total_duration
-
-        # Calculate current value with compound interest simulation
-        self.current_value = self.amount + (self.expected_return * Decimal(str(progress)))
-
-    def get_profit(self):
-        """Get current profit"""
-        return self.current_value - self.amount
 
     def get_progress_percentage(self):
         """Get investment progress as percentage"""
@@ -164,12 +235,12 @@ class UserInvestment(models.Model):
         return timezone.now() >= self.end_date
 
 class InvestmentReturn(models.Model):
-    """Track daily returns for investments"""
+    """Track daily returns for investments - ALL VALUES SET MANUALLY BY ADMIN"""
     investment = models.ForeignKey(UserInvestment, on_delete=models.CASCADE, related_name='returns')
     date = models.DateField()
-    daily_return = models.DecimalField(max_digits=12, decimal_places=2)
-    cumulative_return = models.DecimalField(max_digits=12, decimal_places=2)
-    return_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    daily_return = models.DecimalField(max_digits=12, decimal_places=2, help_text="Set manually by admin")
+    cumulative_return = models.DecimalField(max_digits=12, decimal_places=2, help_text="Set manually by admin")
+    return_percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Set manually by admin")
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -179,20 +250,46 @@ class InvestmentReturn(models.Model):
 
     def __str__(self):
         return f"{self.investment} - {self.date} - {self.return_percentage}%"
+    
+    def save(self, *args, **kwargs):
+        """NO AUTOMATIC CALCULATIONS - Admin controls everything"""
+        # Admin must set cumulative_return manually
+        super().save(*args, **kwargs)
+
+class ManualProfit(models.Model):
+    """Manual profit entries given by admin without requiring investments"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='manual_profits')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Profit amount to give to user")
+    description = models.CharField(max_length=255, help_text="Reason for giving this profit")
+    given_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='profits_given', help_text="Admin who gave this profit")
+    given_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, help_text="Whether this profit is still active")
+    
+    class Meta:
+        ordering = ['-given_at']
+        
+    def __str__(self):
+        return f"{self.user.username} - ${self.amount} - {self.description}"
 
 class UserPortfolio(models.Model):
-    """User's portfolio summary"""
+    """User's portfolio summary - ALL VALUES SET MANUALLY BY ADMIN"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='portfolio')
 
-    # Portfolio metrics
-    total_invested = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    total_current_value = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    total_profit = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    total_roi_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # MANUAL PORTFOLIO METRICS - Admin controls everything
+    total_invested = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Set manually by admin")
+    total_current_value = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Set manually by admin")
+    total_profit = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Set manually by admin")
+    total_roi_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Set manually by admin")
+    
+    # Total withdrawable amount
+    total_withdrawable = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Set manually by admin")
+    
+    # Manual profit tracking
+    manual_profit_total = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Set manually by admin")
 
-    # Investment counts
-    active_investments = models.PositiveIntegerField(default=0)
-    completed_investments = models.PositiveIntegerField(default=0)
+    # Investment counts - Set manually by admin
+    active_investments = models.PositiveIntegerField(default=0, help_text="Set manually by admin")
+    completed_investments = models.PositiveIntegerField(default=0, help_text="Set manually by admin")
 
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -200,30 +297,13 @@ class UserPortfolio(models.Model):
         return f"{self.user.username}'s Portfolio"
 
     def update_portfolio_metrics(self):
-        """Update portfolio metrics based on user investments"""
-        investments = self.user.investments.all()
-
-        # Calculate totals
-        self.total_invested = sum(inv.amount for inv in investments)
-        self.total_current_value = sum(inv.current_value for inv in investments)
-        self.total_profit = self.total_current_value - self.total_invested
-
-        # Calculate ROI percentage
-        if self.total_invested > 0:
-            self.total_roi_percentage = (self.total_profit / self.total_invested) * 100
-        else:
-            self.total_roi_percentage = 0
-
-        # Count investments by status
-        self.active_investments = investments.filter(status='active').count()
-        self.completed_investments = investments.filter(status='completed').count()
-
-        self.save()
+        """NO AUTOMATIC UPDATES - Admin must update manually"""
+        # This method does nothing - admin controls all values
+        pass
 
     @classmethod
     def get_or_create_portfolio(cls, user):
-        """Get or create portfolio for user"""
+        """Get or create portfolio for user - no automatic updates"""
         portfolio, created = cls.objects.get_or_create(user=user)
-        if created or not portfolio.last_updated:
-            portfolio.update_portfolio_metrics()
+        # NO automatic updates - admin must set all values manually
         return portfolio

@@ -7,169 +7,390 @@
 
 {% block extra_js %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart data from Django context
+const performanceData = {{ performance_data|safe }};
+const allocationData = {{ allocation_data|safe }};
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
+
+function initializeCharts() {
+    // Portfolio Performance Chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    const portfolioChart = new Chart(portfolioCtx, {
+        type: 'line',
+        data: {
+            labels: performanceData.map(item => item.date),
+            datasets: [{
+                label: 'Cumulative Returns',
+                data: performanceData.map(item => item.cumulative),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Asset Allocation Chart
+    if (allocationData.length > 0) {
+        const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+        const allocationChart = new Chart(allocationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: allocationData.map(item => item.label),
+                datasets: [{
+                    data: allocationData.map(item => item.value),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } else {
+        // Show message if no allocation data
+        document.getElementById('allocationChart').innerHTML = 
+            '<div class="text-center text-muted py-4"><i class="fas fa-chart-pie fa-3x mb-3"></i><p>No active investments</p></div>';
+    }
+}
+
+function updateChart(period) {
+    // Update active button
+    document.querySelectorAll('.chart-controls .btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Here you would typically make an AJAX call to get data for the selected period
+    // For now, we'll just show a message
+    console.log('Updating chart for period:', period);
+}
+</script>
 {% endblock %}
 
 {% block content %}
+    {% if portfolio %}
     <!-- Stats Cards -->
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>${{ portfolio.total_current_value|floatformat:2 }}</h3>
-                            <p>Total Balance</p>
-                            <span class="stats-change {% if portfolio.total_profit >= 0 %}positive{% else %}negative{% endif %}">
-                                {% if portfolio.total_profit >= 0 %}+{% endif %}{{ portfolio.total_roi_percentage|floatformat:1 }}%
-                            </span>
-                        </div>
-                    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="stats-card gradient-primary">
+                <div class="stats-icon">
+                    <i class="fas fa-wallet"></i>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>${{ portfolio.total_profit|floatformat:2 }}</h3>
-                            <p>Total Profit</p>
-                            <span class="stats-change {% if portfolio.total_profit >= 0 %}positive{% else %}negative{% endif %}">
-                                {% if portfolio.total_profit >= 0 %}+{% endif %}${{ portfolio.total_profit|floatformat:2 }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>{{ portfolio.active_investments }}</h3>
-                            <p>Active Investments</p>
-                            <span class="stats-change neutral">{{ portfolio.completed_investments }} completed</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-percentage"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3>18.5%</h3>
-                            <p>ROI</p>
-                            <span class="stats-change positive">+2.1%</span>
-                        </div>
-                    </div>
+                <div class="stats-info">
+                    <h3>${{ total_balance|floatformat:2 }}</h3>
+                    <p>Total Balance</p>
+                    <span class="stats-change positive">
+                        <i class="fas fa-info-circle me-1"></i>Investment + Profit + Crypto
+                    </span>
                 </div>
             </div>
-
-            <!-- Charts Row -->
-            <div class="row g-4 mb-4">
-                <div class="col-lg-8">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Portfolio Performance</h5>
-                            <div class="chart-controls">
-                                <button class="btn btn-sm btn-outline-primary active">1M</button>
-                                <button class="btn btn-sm btn-outline-primary">3M</button>
-                                <button class="btn btn-sm btn-outline-primary">6M</button>
-                                <button class="btn btn-sm btn-outline-primary">1Y</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="portfolioChart"></canvas>
-                        </div>
-                    </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stats-card gradient-success">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="col-lg-4">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5>Asset Allocation</h5>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="allocationChart"></canvas>
-                        </div>
-                    </div>
+                <div class="stats-info">
+                    <h3>${{ portfolio.total_profit|floatformat:2 }}</h3>
+                    <p>Total Profit</p>
+                    <span class="stats-change {% if portfolio.total_profit >= 0 %}positive{% else %}negative{% endif %}">
+                        {% if portfolio.total_profit >= 0 %}+{% endif %}{{ portfolio.total_roi_percentage|floatformat:1 }}%
+                    </span>
                 </div>
             </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stats-card gradient-info">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ portfolio.active_investments }}</h3>
+                    <p>Active Investments</p>
+                    <span class="stats-change neutral">{{ portfolio.completed_investments }} completed</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Recent Activity & Quick Actions -->
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="activity-card">
-                        <div class="card-header">
-                            <h5>Recent Activity</h5>
-                            <a href="{% url 'transactions' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                        </div>
-                        <div class="card-body">
-                            <div class="activity-list">
-                                <div class="activity-item">
-                                    <div class="activity-icon deposit">
-                                        <i class="fas fa-plus"></i>
-                                    </div>
-                                    <div class="activity-info">
-                                        <h6>Deposit</h6>
-                                        <p>Bank Transfer</p>
-                                        <small>2 hours ago</small>
-                                    </div>
-                                    <div class="activity-amount positive">+$1,000.00</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon investment">
-                                        <i class="fas fa-chart-line"></i>
-                                    </div>
-                                    <div class="activity-info">
-                                        <h6>Investment</h6>
-                                        <p>Bitcoin Portfolio</p>
-                                        <small>1 day ago</small>
-                                    </div>
-                                    <div class="activity-amount">$500.00</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon profit">
-                                        <i class="fas fa-arrow-up"></i>
-                                    </div>
-                                    <div class="activity-info">
-                                        <h6>Profit</h6>
-                                        <p>Forex Trading</p>
-                                        <small>2 days ago</small>
-                                    </div>
-                                    <div class="activity-amount positive">+$125.50</div>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="chart-card">
+                <div class="card-header">
+                    <h5>Portfolio Performance (Last 30 Days)</h5>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm btn-outline-primary active" onclick="updateChart('30d')">30D</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('90d')">90D</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('180d')">180D</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('1y')">1Y</button>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="quick-actions-card">
-                        <div class="card-header">
-                            <h5>Quick Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="quick-actions">
-                                <a href="{% url 'deposit' %}" class="quick-action">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <span>Deposit Funds</span>
-                                </a>
-                                <a href="{% url 'withdraw' %}" class="quick-action">
-                                    <i class="fas fa-minus-circle"></i>
-                                    <span>Withdraw</span>
-                                </a>
-                                <a href="{% url 'investments' %}" class="quick-action">
-                                    <i class="fas fa-chart-pie"></i>
-                                    <span>New Investment</span>
-                                </a>
-                                <a href="{% url 'support:support_center' %}" class="quick-action">
-                                    <i class="fas fa-headset"></i>
-                                    <span>Get Support</span>
-                                </a>
+                <div class="card-body">
+                    <canvas id="portfolioChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <div class="card-header">
+                    <h5>Asset Allocation</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="allocationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Quick Actions -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="activity-card">
+                <div class="card-header">
+                    <h5>Recent Activity</h5>
+                    <a href="{% url 'transactions' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="activity-list">
+                        {% if pending_deposits %}
+                            {% for deposit in pending_deposits %}
+                                <div class="activity-item">
+                                    <div class="activity-icon deposit pending">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>Pending Deposit</h6>
+                                        <p>{{ deposit.crypto_wallet.crypto_type }} - Awaiting Approval</p>
+                                        <small>{{ deposit.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="activity-amount">
+                                        {{ deposit.amount }} {{ deposit.crypto_wallet.crypto_type }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if pending_withdrawals %}
+                            {% for withdrawal in pending_withdrawals %}
+                                <div class="activity-item">
+                                    <div class="activity-icon withdrawal pending">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>Pending Withdrawal</h6>
+                                        <p>{{ withdrawal.crypto_type }} - Processing</p>
+                                        <small>{{ withdrawal.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="activity-amount negative">
+                                        {{ withdrawal.amount }} {{ withdrawal.crypto_type }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if recent_transactions %}
+                            {% for transaction in recent_transactions %}
+                                <div class="activity-item">
+                                    <div class="activity-icon {{ transaction.transaction_type }}">
+                                        <i class="{{ transaction.get_type_icon }}"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h6>{{ transaction.get_transaction_type_display }}</h6>
+                                        <p>{{ transaction.crypto_type }} - {{ transaction.get_status_display }}</p>
+                                        <small>{{ transaction.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="activity-amount {% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'profit' %}positive{% elif transaction.transaction_type == 'withdrawal' %}negative{% endif %}">
+                                        {% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'profit' %}+{% endif %}
+                                        {% if transaction.usd_equivalent %}
+                                            ${{ transaction.usd_equivalent|floatformat:2 }}
+                                        {% else %}
+                                            {{ transaction.amount }} {{ transaction.crypto_type }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if not pending_deposits and not pending_withdrawals and not recent_transactions %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No recent activity</p>
+                                <small>Your transaction history will appear here</small>
                             </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col-lg-4">
+            <div class="quick-actions-card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <a href="{% url 'deposit' %}" class="quick-action">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Deposit Funds</span>
+                        </a>
+                        <a href="{% url 'withdraw' %}" class="quick-action">
+                            <i class="fas fa-minus-circle"></i>
+                            <span>Withdraw</span>
+                        </a>
+                        <a href="{% url 'investments' %}" class="quick-action">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>New Investment</span>
+                        </a>
+                        <a href="{% url 'support:support_center' %}" class="quick-action">
+                            <i class="fas fa-headset"></i>
+                            <span>Get Support</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Stats -->
+            <div class="stats-summary mt-4">
+                <div class="card-header">
+                    <h5>Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Deposits</span>
+                        <span class="stat-value positive">${{ total_deposits|floatformat:2 }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Withdrawals</span>
+                        <span class="stat-value negative">${{ total_withdrawals|floatformat:2 }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Crypto Balance</span>
+                        <span class="stat-value">{{ total_crypto_balance|floatformat:8 }}</span>
+                    </div>
+                    {% if pending_deposits %}
+                    <div class="stat-item">
+                        <span class="stat-label">Pending Deposits</span>
+                        <span class="stat-value warning">{{ pending_deposits|length }} pending</span>
+                    </div>
+                    {% endif %}
+                    {% if pending_withdrawals %}
+                    <div class="stat-item">
+                        <span class="stat-label">Pending Withdrawals</span>
+                        <span class="stat-value warning">{{ pending_withdrawals|length }} pending</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Summary -->
+    {% if recent_investments %}
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Investments</h5>
+                    <a href="{% url 'investments' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>ROI</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Days Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in recent_investments %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ investment.get_plan_name }}</strong>
+                                        <br><small class="text-muted">{{ investment.get_plan_type|title }}</small>
+                                    </td>
+                                    <td>${{ investment.amount|floatformat:2 }}</td>
+                                    <td>{{ investment.roi_percentage|floatformat:1 }}%</td>
+                                    <td>
+                                        <span class="badge bg-{% if investment.status == 'active' %}success{% elif investment.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                                            {{ investment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ investment.get_progress_percentage }}%"
+                                                 aria-valuenow="{{ investment.get_progress_percentage }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small>{{ investment.get_progress_percentage|floatformat:1 }}%</small>
+                                    </td>
+                                    <td>{{ investment.days_remaining }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <!-- No Portfolio Data Available -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h4>Portfolio Data Unavailable</h4>
+                    <p class="text-muted">Unable to load your portfolio information at this time.</p>
+                    <a href="{% url 'investments' %}" class="btn btn-primary">Create Your First Investment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 {% endblock %}

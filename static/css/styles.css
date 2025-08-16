@@ -794,6 +794,22 @@ html {
     }
 }
 
+@media (max-width: 600px) {
+    .hero-visual {
+        display: none;           /* Remove hero image */
+    }
+    
+    .hero-content {
+        text-align: center;      /* Center all text */
+        padding-bottom: 2rem;
+        padding-top: 3rem;    /* Bottom padding */
+    }
+    
+    .hero-buttons {
+        margin-bottom: 2rem;     /* Margin after buttons */
+    }
+}
+
 /* FAQ Section */
 .accordion-item {
     border: none;
@@ -1749,7 +1765,25 @@ html {
     border: none;
     font-size: 1.2rem;
     color: var(--text-color);
+    padding: 0.5rem;
     cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Force show on mobile */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
 }
 
 .page-title {
@@ -2435,10 +2469,35 @@ html {
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 260px;
     }
 
     .sidebar.active {
         transform: translateX(0);
+    }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-backdrop.active {
+        display: block;
+        opacity: 1;
     }
 
     .main-content {
@@ -2446,7 +2505,25 @@ html {
     }
 
     .sidebar-toggle {
-        display: block;
+        display: flex !important;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        padding: 0.5rem;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+    }
+
+    .sidebar-toggle:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--primary-color);
     }
 
     .dashboard-content {

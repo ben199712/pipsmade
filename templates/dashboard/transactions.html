@@ -14,9 +14,9 @@
                             <i class="fas fa-exchange-alt"></i>
                         </div>
                         <div class="stats-info">
-                            <h3>156</h3>
+                            <h3>{{ page_obj.paginator.count|default:0 }}</h3>
                             <p>Total Transactions</p>
-                            <span class="stats-change positive">+12 this month</span>
+                            <span class="stats-change positive">All time</span>
                         </div>
                     </div>
                 </div>
@@ -26,9 +26,9 @@
                             <i class="fas fa-plus-circle"></i>
                         </div>
                         <div class="stats-info">
-                            <h3>$15,250</h3>
+                            <h3>${{ total_deposits|floatformat:2 }}</h3>
                             <p>Total Deposits</p>
-                            <span class="stats-change positive">+8.5%</span>
+                            <span class="stats-change positive">Completed</span>
                         </div>
                     </div>
                 </div>
@@ -38,9 +38,9 @@
                             <i class="fas fa-minus-circle"></i>
                         </div>
                         <div class="stats-info">
-                            <h3>$4,800</h3>
+                            <h3>${{ total_withdrawals|floatformat:2 }}</h3>
                             <p>Total Withdrawals</p>
-                            <span class="stats-change neutral">-2.1%</span>
+                            <span class="stats-change neutral">Completed</span>
                         </div>
                     </div>
                 </div>
@@ -50,9 +50,9 @@
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stats-info">
-                            <h3>$2,180</h3>
-                            <p>Total Profits</p>
-                            <span class="stats-change positive">+18.5%</span>
+                            <h3>{{ pending_transactions }}</h3>
+                            <p>Pending Transactions</p>
+                            <span class="stats-change warning">Awaiting</span>
                         </div>
                     </div>
                 </div>
@@ -142,144 +142,47 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% for transaction in page_obj %}
                                         <tr>
                                             <td>
                                                 <div class="transaction-date">
-                                                    <div>Jan 20, 2024</div>
-                                                    <small>2:30 PM</small>
+                                                    <div>{{ transaction.created_at|date:"M d, Y" }}</div>
+                                                    <small>{{ transaction.created_at|time:"g:i A" }}</small>
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="transaction-type deposit">
-                                                    <i class="fas fa-plus-circle"></i>
-                                                    <span>Deposit</span>
+                                                <div class="transaction-type {{ transaction.transaction_type }}">
+                                                    <i class="{{ transaction.get_type_icon }}"></i>
+                                                    <span>{{ transaction.get_transaction_type_display }}</span>
                                                 </div>
                                             </td>
-                                            <td>Bank transfer deposit</td>
-                                            <td class="text-success">+$1,000.00</td>
-                                            <td><span class="badge bg-success">Completed</span></td>
-                                            <td>Bank Transfer</td>
+                                            <td>{{ transaction.user_notes|default:"Transaction" }}</td>
+                                            <td class="{% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'profit' %}text-success{% elif transaction.transaction_type == 'withdrawal' or transaction.transaction_type == 'fee' %}text-danger{% else %}text-primary{% endif %}">
+                                                {% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'profit' %}+{% endif %}
+                                                {% if transaction.transaction_type == 'withdrawal' or transaction.transaction_type == 'fee' %}-{% endif %}
+                                                {% if transaction.amount == 0 %}
+                                                    $0.00
+                                                {% else %}
+                                                    ${{ transaction.amount|floatformat:2 }}
+                                                {% endif %}
+                                            </td>
+                                            <td><span class="badge bg-{{ transaction.get_status_color }}">{{ transaction.get_status_display }}</span></td>
+                                            <td>{{ transaction.crypto_type|default:"Internal" }}</td>
                                             <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx001')">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('{{ transaction.id }}')">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                             </td>
                                         </tr>
+                                        {% empty %}
                                         <tr>
-                                            <td>
-                                                <div class="transaction-date">
-                                                    <div>Jan 19, 2024</div>
-                                                    <small>10:15 AM</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="transaction-type investment">
-                                                    <i class="fas fa-chart-pie"></i>
-                                                    <span>Investment</span>
-                                                </div>
-                                            </td>
-                                            <td>Bitcoin portfolio investment</td>
-                                            <td class="text-primary">$500.00</td>
-                                            <td><span class="badge bg-success">Completed</span></td>
-                                            <td>Internal</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx002')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
+                                            <td colspan="7" class="text-center py-4">
+                                                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                                                <p class="text-muted">No transactions found</p>
+                                                <small>Your transaction history will appear here</small>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="transaction-date">
-                                                    <div>Jan 18, 2024</div>
-                                                    <small>4:45 PM</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="transaction-type profit">
-                                                    <i class="fas fa-arrow-up"></i>
-                                                    <span>Profit</span>
-                                                </div>
-                                            </td>
-                                            <td>Trading profit from Forex</td>
-                                            <td class="text-success">+$125.50</td>
-                                            <td><span class="badge bg-success">Completed</span></td>
-                                            <td>Trading</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx003')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="transaction-date">
-                                                    <div>Jan 17, 2024</div>
-                                                    <small>11:20 AM</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="transaction-type withdrawal">
-                                                    <i class="fas fa-minus-circle"></i>
-                                                    <span>Withdrawal</span>
-                                                </div>
-                                            </td>
-                                            <td>Bank transfer withdrawal</td>
-                                            <td class="text-danger">-$800.00</td>
-                                            <td><span class="badge bg-warning">Processing</span></td>
-                                            <td>Bank Transfer</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx004')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="transaction-date">
-                                                    <div>Jan 16, 2024</div>
-                                                    <small>9:30 AM</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="transaction-type fee">
-                                                    <i class="fas fa-receipt"></i>
-                                                    <span>Fee</span>
-                                                </div>
-                                            </td>
-                                            <td>Trading commission fee</td>
-                                            <td class="text-danger">-$15.00</td>
-                                            <td><span class="badge bg-success">Completed</span></td>
-                                            <td>Internal</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx005')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="transaction-date">
-                                                    <div>Jan 15, 2024</div>
-                                                    <small>3:15 PM</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="transaction-type deposit">
-                                                    <i class="fas fa-plus-circle"></i>
-                                                    <span>Deposit</span>
-                                                </div>
-                                            </td>
-                                            <td>Credit card deposit</td>
-                                            <td class="text-success">+$2,500.00</td>
-                                            <td><span class="badge bg-success">Completed</span></td>
-                                            <td>Credit Card</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('tx006')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>

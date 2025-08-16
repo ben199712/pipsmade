@@ -379,23 +379,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="emailSupportForm">
+                    <form id="emailSupportForm" method="post" action="{% url 'support:email_support' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Subject</label>
-                                <select class="form-select" required>
+                                <label class="form-label">Topic <span class="text-danger">*</span></label>
+                                <select class="form-select" name="topic" required>
                                     <option value="">Select a topic</option>
                                     <option value="account">Account Issues</option>
                                     <option value="deposit">Deposit Problems</option>
                                     <option value="withdrawal">Withdrawal Issues</option>
                                     <option value="investment">Investment Questions</option>
                                     <option value="technical">Technical Support</option>
+                                    <option value="billing">Billing & Fees</option>
+                                    <option value="security">Security Concerns</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Priority</label>
-                                <select class="form-select" required>
+                                <label class="form-label">Priority <span class="text-danger">*</span></label>
+                                <select class="form-select" name="priority" required>
                                     <option value="low">Low</option>
                                     <option value="medium" selected>Medium</option>
                                     <option value="high">High</option>
@@ -403,20 +406,30 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Message</label>
-                                <textarea class="form-control" rows="6" placeholder="Describe your issue in detail..." required></textarea>
+                                <label class="form-label">Subject <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="subject" placeholder="Brief description of your issue" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Contact Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" name="contact_email" placeholder="your.email@example.com" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Message <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="message" rows="6" placeholder="Describe your issue in detail..." required></textarea>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Attachments (Optional)</label>
-                                <input type="file" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                                <small class="text-muted">Max 5 files, 10MB each</small>
+                                <input type="file" class="form-control" name="attachments" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt">
+                                <small class="form-text text-muted">Max 5 files, 10MB each</small>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Send Message</button>
+                    <button type="submit" form="emailSupportForm" class="btn btn-primary" id="emailSubmitBtn">
+                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                    </button>
                 </div>
             </div>
         </div>

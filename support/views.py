@@ -5,14 +5,21 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.core.mail import send_mail, EmailMessage
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from .models import SupportTicket, SupportMessage, SupportCategory, SupportKnowledgeBase, SupportFAQ
-from .forms import SupportTicketForm, SupportMessageForm, QuickSupportForm, AdminTicketUpdateForm
+from .forms import SupportTicketForm, SupportMessageForm, QuickSupportForm, AdminTicketUpdateForm, EmailSupportForm
 
 @login_required
 def support_center(request):
     """Main support center page"""
-    # Get user's recent tickets
-    user_tickets = SupportTicket.objects.filter(user=request.user)[:5]
+    # Get user's tickets for statistics (don't slice here)
+    user_tickets_all = SupportTicket.objects.filter(user=request.user)
+    
+    # Get user's recent tickets (slice after getting the base queryset)
+    user_tickets = user_tickets_all[:5]
 
     # Get featured knowledge base articles
     featured_articles = SupportKnowledgeBase.objects.filter(
@@ -26,11 +33,11 @@ def support_center(request):
     # Get support categories
     categories = SupportCategory.objects.filter(is_active=True)
 
-    # Support statistics
+    # Support statistics (use the unsliced queryset)
     stats = {
-        'total_tickets': user_tickets.count(),
-        'open_tickets': user_tickets.filter(status='open').count(),
-        'resolved_tickets': user_tickets.filter(status='resolved').count(),
+        'total_tickets': user_tickets_all.count(),
+        'open_tickets': user_tickets_all.filter(status='open').count(),
+        'resolved_tickets': user_tickets_all.filter(status='resolved').count(),
     }
 
     context = {
@@ -295,6 +302,171 @@ def quick_help(request):
     }
 
     return render(request, 'support/quick_help.html', context)
+
+@login_required
+def email_support(request):
+    """Handle email support requests"""
+    print(f"Email support view called with method: {request.method}")
+    
+    if request.method == 'POST':
+        print("Processing POST request")
+        print(f"POST data: {request.POST}")
+        print(f"FILES data: {request.FILES}")
+        
+        form = EmailSupportForm(request.POST, request.FILES)
+        print(f"Form is valid: {form.is_valid()}")
+        
+        if form.is_valid():
+            print("Form is valid, processing...")
+            try:
+                # Get form data
+                topic = form.cleaned_data['topic']
+                priority = form.cleaned_data['priority']
+                subject = form.cleaned_data['subject']
+                message = form.cleaned_data['message']
+                contact_email = form.cleaned_data['contact_email']
+                attachments = request.FILES.getlist('attachments')
+                
+                print(f"Form data - Topic: {topic}, Priority: {priority}, Subject: {subject}")
+                print(f"Contact email: {contact_email}, Attachments count: {len(attachments)}")
+                
+                # Create support ticket
+                category, _ = SupportCategory.objects.get_or_create(
+                    name=topic.title(),
+                    defaults={
+                        'description': f'Email support for {topic}',
+                        'icon': 'fas fa-envelope',
+                        'color': 'primary'
+                    }
+                )
+                
+                print(f"Category: {category.name}")
+                
+                # Create ticket
+                ticket = SupportTicket.objects.create(
+                    user=request.user,
+                    category=category,
+                    subject=f"Email Support: {subject}",
+                    description=message,
+                    priority=priority,
+                    status='open',
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                
+                print(f"Ticket created with ID: {ticket.id}")
+                
+                # Handle attachments
+                if attachments:
+                    for attachment in attachments:
+                        # Create message with attachment
+                        support_message = SupportMessage.objects.create(
+                            ticket=ticket,
+                            user=request.user,
+                            message=f"Email support request from {contact_email}",
+                            is_staff_reply=False
+                        )
+                        
+                        # Save attachment
+                        support_message.attachment = attachment
+                        support_message.save()
+                        
+                        print(f"Attachment saved: {attachment.name}")
+                
+                # Send confirmation email to user
+                user_subject = f"Support Request Received - #{ticket.id}"
+                user_message = f"""
+                Dear {request.user.get_full_name() or request.user.username},
+
+                Thank you for contacting our support team. We have received your support request and will respond within 2-4 hours.
+
+                Ticket Details:
+                - Ticket ID: #{ticket.id}
+                - Subject: {subject}
+                - Priority: {priority.title()}
+                - Status: Open
+
+                We will contact you at: {contact_email}
+
+                If you have any additional information to add, please reply to this email or add a message to your ticket.
+
+                Best regards,
+                The PipsMade Support Team
+                """
+                
+                try:
+                    send_mail(
+                        subject=user_subject,
+                        message=strip_tags(user_message),
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[contact_email],
+                        fail_silently=True,
+                    )
+                    print("Confirmation email sent successfully")
+                except Exception as e:
+                    # Log email error but don't fail the request
+                    print(f"Failed to send confirmation email: {e}")
+                
+                # Send notification to admin
+                admin_subject = f"New Email Support Request - #{ticket.id}"
+                admin_message = f"""
+                New email support request received:
+
+                Ticket ID: #{ticket.id}
+                User: {request.user.get_full_name() or request.user.username} ({request.user.email})
+                Contact Email: {contact_email}
+                Topic: {topic.title()}
+                Priority: {priority.title()}
+                Subject: {subject}
+                Message: {message}
+
+                View ticket: {request.build_absolute_uri(f'/admin/support/supportticket/{ticket.id}/')}
+                """
+                
+                try:
+                    send_mail(
+                        subject=admin_subject,
+                        message=strip_tags(admin_message),
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[settings.ADMIN_EMAIL],
+                        fail_silently=True,
+                    )
+                    print("Admin notification sent successfully")
+                except Exception as e:
+                    # Log email error but don't fail the request
+                    print(f"Failed to send admin notification: {e}")
+                
+                messages.success(
+                    request, 
+                    f'Your email support request has been sent successfully! Ticket #{ticket.id} has been created. We will respond within 2-4 hours.'
+                )
+                
+                print("Returning success response")
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Email sent successfully! Ticket #{ticket.id} created.',
+                    'ticket_id': ticket.id
+                })
+                
+            except Exception as e:
+                print(f"Error processing email support: {str(e)}")
+                messages.error(request, f'Failed to send email support request: {str(e)}')
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Failed to send email: {str(e)}'
+                })
+        else:
+            print(f"Form errors: {form.errors}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Please correct the errors in the form.',
+                'errors': form.errors
+            })
+    
+    # GET request - return form
+    print("Returning email support form")
+    form = EmailSupportForm()
+    return render(request, 'support/email_support.html', {'form': form})
 
 # AJAX Views
 @login_required

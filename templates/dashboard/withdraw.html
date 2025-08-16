@@ -25,57 +25,47 @@
         {% endfor %}
     {% endif %}
 
-    <!-- Balance Overview with Enhanced Styling -->
+    <!-- Main Balance Cards -->
     <div class="row g-4 mb-4">
         <div class="col-lg-4">
             <div class="stats-card gradient-primary">
                 <div class="stats-icon">
-                    <i class="fas fa-wallet"></i>
+                    <i class="fas fa-hand-holding-usd"></i>
                 </div>
                 <div class="stats-info">
-                    <h3 class="counter" data-target="{{ total_balance|floatformat:2 }}">${{ total_balance|floatformat:2 }}</h3>
-                    <p>Available Balance</p>
+                    <h3>${{ total_available_balance|floatformat:2 }}</h3>
+                    <p>Total Available</p>
                     <span class="stats-change positive">
-                        <i class="fas fa-coins me-1"></i>{{ user_wallets.count }} wallets
+                        <i class="fas fa-info-circle me-1"></i>Investment + Profit + Crypto
                     </span>
-                </div>
-                <div class="stats-chart">
-                    <canvas id="balanceChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="stats-card gradient-warning">
+            <div class="stats-card gradient-success">
                 <div class="stats-icon">
-                    <i class="fas fa-arrow-down"></i>
+                    <i class="fas fa-coins"></i>
                 </div>
                 <div class="stats-info">
-                    <h3 class="counter" data-target="{{ total_withdrawals|floatformat:2 }}">${{ total_withdrawals|floatformat:2 }}</h3>
-                    <p>Total Withdrawals</p>
-                    <span class="stats-change neutral">
-                        <i class="fas fa-calendar me-1"></i>All time
+                    <h3>${{ total_crypto_balance|floatformat:2 }}</h3>
+                    <p>Crypto Balance</p>
+                    <span class="stats-change positive">
+                        <i class="fas fa-wallet me-1"></i>Available for withdrawal
                     </span>
-                </div>
-                <div class="stats-chart">
-                    <canvas id="withdrawalChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
             <div class="stats-card gradient-info">
                 <div class="stats-icon">
-                    <i class="fas fa-hourglass-half"></i>
+                    <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="stats-info">
-                    <h3 class="counter" data-target="{{ pending_withdrawals }}">{{ pending_withdrawals }}</h3>
-                    <p>Pending Withdrawals</p>
-                    <span class="stats-change {% if pending_withdrawals > 0 %}warning{% else %}positive{% endif %}">
-                        <i class="fas fa-{% if pending_withdrawals > 0 %}clock{% else %}check{% endif %} me-1"></i>
-                        {% if pending_withdrawals > 0 %}Awaiting approval{% else %}All processed{% endif %}
+                    <h3>${{ total_portfolio_value|floatformat:2 }}</h3>
+                    <p>Investment Portfolio</p>
+                    <span class="stats-change neutral">
+                        <i class="fas fa-chart-pie me-1"></i>Investment + Profit
                     </span>
-                </div>
-                <div class="stats-chart">
-                    <canvas id="pendingChart" width="60" height="30"></canvas>
                 </div>
             </div>
         </div>
@@ -88,8 +78,8 @@
             <div class="dashboard-card enhanced-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h5><i class="fas fa-wallet me-2 text-primary"></i>Available Balances</h5>
-                        <small class="text-muted">Click on a wallet to auto-fill withdrawal form</small>
+                        <h5><i class="fas fa-wallet me-2 text-primary"></i>Crypto Wallet Balances</h5>
+                        <small class="text-muted">Only crypto wallet balances can be withdrawn. Investment portfolio value cannot be withdrawn directly.</small>
                     </div>
                     <div class="balance-toggle">
                         <button class="btn btn-sm btn-outline-secondary" id="toggleBalanceView">
@@ -101,7 +91,7 @@
                     <div class="row g-3" id="walletBalances">
                         {% for wallet in user_wallets %}
                         <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="crypto-balance-card interactive-card"
+                            <div class="crypto-balance-card interactive-card {% if wallet.balance > 0 %}has-balance{% else %}no-balance{% endif %}"
                                  data-crypto="{{ wallet.crypto_type }}"
                                  data-balance="{{ wallet.balance }}"
                                  onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
@@ -124,18 +114,50 @@
                                     </p>
                                     <small class="text-muted">{{ wallet.crypto_type }}</small>
                                     <div class="balance-actions mt-2">
-                                        <button class="btn btn-sm btn-primary" onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
-                                            <i class="fas fa-arrow-right me-1"></i>Withdraw
-                                        </button>
+                                        {% if wallet.balance > 0 %}
+                                            <button class="btn btn-sm btn-primary" onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
+                                                <i class="fas fa-arrow-right me-1"></i>Withdraw
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="fas fa-plus me-1"></i>Add Funds
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="card-overlay">
-                                    <i class="fas fa-mouse-pointer"></i>
-                                    <span>Click to select</span>
+                                    {% if wallet.balance > 0 %}
+                                        <i class="fas fa-mouse-pointer"></i>
+                                        <span>Click to select</span>
+                                    {% else %}
+                                        <i class="fas fa-plus"></i>
+                                        <span>No balance</span>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+
+                    <!-- Balance Summary -->
+                    <div class="balance-summary mt-4 p-3 bg-light rounded">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <h6 class="text-muted mb-1">Total Crypto Balance</h6>
+                                <h4 class="text-primary mb-0">${{ total_crypto_balance|floatformat:2 }}</h4>
+                                <small class="text-muted">Available for withdrawal</small>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-muted mb-1">Investment Portfolio</h6>
+                                <h4 class="text-info mb-0">${{ total_portfolio_value|floatformat:2 }}</h4>
+                                <small class="text-muted">Cannot be withdrawn directly</small>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-muted mb-1">Total Available</h6>
+                                <h4 class="text-success mb-0">${{ total_available_balance|floatformat:2 }}</h4>
+                                <small class="text-muted">Dashboard total</small>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Quick Actions -->
@@ -175,6 +197,13 @@
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Important:</strong> Withdrawals are processed manually and may take 1-24 hours.
                         Make sure your destination address is correct as transactions cannot be reversed.
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Withdrawal Limits:</strong> You can only withdraw from your crypto wallet balances. 
+                        Investment portfolio value cannot be withdrawn directly - you must first liquidate your investments.
+                        <br><strong>Available for withdrawal: ${{ total_crypto_balance|floatformat:2 }}</strong>
                     </div>
 
                     <form method="post" id="withdrawForm">

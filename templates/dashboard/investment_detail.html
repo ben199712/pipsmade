@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load investment_extras %}
 
 {% block title %}Investment Detail - pipsmade{% endblock %}
 
@@ -114,7 +115,7 @@
                 
                 {% if investment.status == 'active' %}
                 <div class="mt-4">
-                    <button class="btn btn-outline-danger w-100" onclick="cancelInvestment({{ investment.id }})">
+                    <button class="btn btn-outline-danger w-100" onclick="showCancelConfirmation({{ investment.id }})">
                         <i class="fas fa-times me-2"></i>Cancel Investment
                     </button>
                 </div>
@@ -137,7 +138,190 @@
         </div>
     </div>
 </div>
+
+<!-- Beautiful Confirmation Modal -->
+<div class="modal fade" id="cancelInvestmentModal" tabindex="-1" aria-labelledby="cancelInvestmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="confirmation-icon mb-4">
+                    <div class="icon-circle">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h4 class="modal-title mb-3" id="cancelInvestmentModalLabel">Cancel Investment?</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to cancel this investment? This action cannot be undone and may result in the loss of potential returns.
+                </p>
+                <div class="investment-summary mb-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="summary-item">
+                                <small class="text-muted d-block">Investment Amount</small>
+                                <strong>${{ investment.amount|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="summary-item">
+                                <small class="text-muted d-block">Current Value</small>
+                                <strong>${{ investment.current_value|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Keep Investment
+                    </button>
+                    <button type="button" class="btn btn-danger flex-fill" onclick="confirmCancelInvestment()">
+                        <i class="fas fa-check me-2"></i>Yes, Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
+{% block extra_css %}
+<style>
+/* Custom Modal Styling */
+.modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+.confirmation-icon {
+    margin-top: -1rem;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+.icon-circle i {
+    font-size: 2rem;
+    color: white;
+}
+
+.modal-title {
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.investment-summary {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-item small {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.summary-item strong {
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+
+.modal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.modal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-light {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #6c757d;
+}
+
+.btn-light:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Animation for modal */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock extra_css %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -188,12 +372,30 @@ const chart = new Chart(ctx, {
     }
 });
 
-// Cancel investment function
-function cancelInvestment(investmentId) {
-    if (confirm('Are you sure you want to cancel this investment?')) {
+// Investment ID for cancellation
+let currentInvestmentId = null;
+
+// Show beautiful confirmation modal
+function showCancelConfirmation(investmentId) {
+    currentInvestmentId = investmentId;
+    const modal = new bootstrap.Modal(document.getElementById('cancelInvestmentModal'));
+    modal.show();
+}
+
+// Confirm investment cancellation
+function confirmCancelInvestment() {
+    if (currentInvestmentId) {
+        // Hide the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelInvestmentModal'));
+        modal.hide();
+        
+        // Show loading state
+        showNotification('Processing cancellation...', 'info');
+        
+        // Create and submit the form
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/investments/${investmentId}/cancel/`;
+        form.action = `/investments/${currentInvestmentId}/cancel/`;
         
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const csrfInput = document.createElement('input');
@@ -205,6 +407,33 @@ function cancelInvestment(investmentId) {
         document.body.appendChild(form);
         form.submit();
     }
+}
+
+// Show notification function (using your existing alert system)
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert-notification alert-${type}`;
+    notification.innerHTML = `
+        <div class="alert-content">
+            <i class="alert-icon fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            <span class="alert-message">${message}</span>
+            <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    // Add to alert container
+    const container = document.querySelector('.alert-container') || document.body;
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
 }
 </script>
 {% endblock %}

@@ -130,7 +130,7 @@ class DepositRequestAdmin(admin.ModelAdmin):
         'user__username', 'user__email', 'transaction_hash',
         'sender_address'
     ]
-    readonly_fields = ['created_at', 'updated_at', 'verified_at']
+    readonly_fields = ['created_at', 'updated_at', 'verified_at', 'proof_image_display']
 
     fieldsets = (
         ('Deposit Information', {
@@ -140,7 +140,7 @@ class DepositRequestAdmin(admin.ModelAdmin):
             )
         }),
         ('Proof of Payment', {
-            'fields': ('proof_image_display',)
+            'fields': ('proof_image',)
         }),
         ('Admin Verification', {
             'fields': (

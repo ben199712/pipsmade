@@ -1,0 +1,257 @@
+{% comment %}
+Reusable Confirmation Modal Component
+
+Usage:
+{% include 'components/confirmation_modal.html' with 
+    modal_id="uniqueModalId"
+    title="Confirmation Title"
+    message="Your confirmation message here"
+    confirm_text="Yes, Confirm"
+    cancel_text="Cancel"
+    confirm_action="confirmFunction()"
+    type="warning"
+    show_summary=false
+    summary_data=null
+%}
+
+Parameters:
+- modal_id: Unique ID for the modal
+- title: Modal title
+- message: Confirmation message
+- confirm_text: Text for confirm button
+- cancel_text: Text for cancel button
+- confirm_action: JavaScript function to call on confirm
+- type: Modal type (warning, danger, info, success)
+- show_summary: Whether to show summary section
+- summary_data: Data for summary section
+{% endcomment %}
+
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="confirmation-icon mb-4">
+                    <div class="icon-circle icon-{{ type|default:'warning' }}">
+                        <i class="fas fa-{{ type|default:'warning'|yesno:'exclamation-triangle,exclamation-circle,info-circle,check-circle' }}"></i>
+                    </div>
+                </div>
+                <h4 class="modal-title mb-3" id="{{ modal_id }}Label">{{ title|default:"Confirm Action" }}</h4>
+                <p class="text-muted mb-4">{{ message|default:"Are you sure you want to proceed with this action?" }}</p>
+                
+                {% if show_summary and summary_data %}
+                <div class="action-summary mb-4">
+                    <div class="row g-3">
+                        {% for item in summary_data %}
+                        <div class="col-6">
+                            <div class="summary-item">
+                                <small class="text-muted d-block">{{ item.label }}</small>
+                                <strong>{{ item.value }}</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>{{ cancel_text|default:"Cancel" }}
+                    </button>
+                    <button type="button" class="btn btn-{{ type|default:'warning' }} flex-fill" onclick="{{ confirm_action }}">
+                        <i class="fas fa-check me-2"></i>{{ confirm_text|default:"Confirm" }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Reusable Confirmation Modal Styling */
+.modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+.confirmation-icon {
+    margin-top: -1rem;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.icon-circle.icon-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+.icon-circle.icon-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+}
+
+.icon-circle.icon-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.icon-circle.icon-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+.icon-circle i {
+    font-size: 2rem;
+    color: white;
+}
+
+.modal-title {
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.action-summary {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-item small {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.summary-item strong {
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+
+.modal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.modal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-light {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #6c757d;
+}
+
+.btn-light:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Animation for modal */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+</style> 

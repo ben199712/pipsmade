@@ -1,0 +1,452 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Email Support - pipsmade{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-envelope me-2 text-primary"></i>
+        Email Support
+    </div>
+{% endblock %}
+
+{% block content %}
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-envelope me-2"></i>Send Email to Support</h5>
+                    <p class="text-muted mb-0">We'll respond to your email within 2-4 hours</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="emailSupportForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4">
+                            <!-- Topic Selection -->
+                            <div class="col-md-6">
+                                <label for="{{ form.topic.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tags me-2"></i>Topic <span class="text-danger">*</span>
+                                </label>
+                                {{ form.topic }}
+                                {% if form.topic.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.topic.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.topic.help_text }}</small>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="col-md-6">
+                                <label for="{{ form.priority.id_for_label }}" class="form-label">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Priority <span class="text-danger">*</span>
+                                </label>
+                                {{ form.priority }}
+                                {% if form.priority.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.priority.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.priority.help_text }}</small>
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="col-12">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                                    <i class="fas fa-heading me-2"></i>Subject <span class="text-danger">*</span>
+                                </label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.subject.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.subject.help_text }}</small>
+                            </div>
+
+                            <!-- Contact Email -->
+                            <div class="col-12">
+                                <label for="{{ form.contact_email.id_for_label }}" class="form-label">
+                                    <i class="fas fa-at me-2"></i>Contact Email <span class="text-danger">*</span>
+                                </label>
+                                {{ form.contact_email }}
+                                {% if form.contact_email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.contact_email.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.contact_email.help_text }}</small>
+                            </div>
+
+                            <!-- Message -->
+                            <div class="col-12">
+                                <label for="{{ form.message.id_for_label }}" class="form-label">
+                                    <i class="fas fa-align-left me-2"></i>Message <span class="text-danger">*</span>
+                                </label>
+                                {{ form.message }}
+                                {% if form.message.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.message.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.message.help_text }}</small>
+                            </div>
+
+                            <!-- File Attachments -->
+                            <div class="col-12">
+                                <label for="{{ form.attachments.id_for_label }}" class="form-label">
+                                    <i class="fas fa-paperclip me-2"></i>Attachments
+                                </label>
+                                {{ form.attachments }}
+                                {% if form.attachments.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.attachments.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.attachments.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    <a href="{% url 'support:support_center' %}" class="btn btn-light flex-fill">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Support
+                                    </a>
+                                    <button type="submit" class="btn btn-primary flex-fill" id="submitBtn">
+                                        <i class="fas fa-paper-plane me-2"></i>Send Email
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Email Support Info -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle me-2 text-info"></i>What Happens Next?</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>Immediate Response:</strong> You'll receive a confirmation email with your ticket number
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <strong>Response Time:</strong> Our team will respond within 2-4 hours during business hours
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-ticket-alt text-primary me-2"></i>
+                                <strong>Ticket Created:</strong> A support ticket is automatically created for tracking
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-envelope text-info me-2"></i>
+                                <strong>Email Updates:</strong> You'll receive email updates as we work on your issue
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Form Styling */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Info Items */
+.info-item {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #28a745;
+}
+
+.info-item i {
+    font-size: 0.9rem;
+}
+
+.info-item strong {
+    color: #495057;
+}
+
+/* Form Actions */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+}
+
+.btn-light {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #6c757d;
+}
+
+.btn-light:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+/* File Upload Styling */
+input[type="file"] {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 1rem;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-card {
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-item {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation for form elements */
+.form-control,
+.form-select {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading state for submit button */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('emailSupportForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    console.log('Email support form initialized:', form);
+    console.log('Submit button:', submitBtn);
+    
+    // Form submission handling
+    form.addEventListener('submit', function(e) {
+        console.log('Form submission started');
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.classList.add('btn-loading');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        submitBtn.disabled = true;
+        
+        // Create FormData for file uploads
+        const formData = new FormData(form);
+        
+        // Log form data for debugging
+        for (let [key, value] of formData.entries()) {
+            console.log('Form data:', key, value);
+        }
+        
+        // Send AJAX request
+        fetch('{% url "support:email_support" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                // Show success message
+                if (window.dashboardUtils && window.dashboardUtils.showNotification) {
+                    window.dashboardUtils.showNotification(data.message, 'success');
+                } else {
+                    // Fallback notification
+                    alert(data.message);
+                }
+                
+                // Reset form
+                form.reset();
+                
+                // Redirect to support center after a delay
+                setTimeout(() => {
+                    window.location.href = '{% url "support:support_center" %}';
+                }, 2000);
+            } else {
+                // Show error message
+                if (window.dashboardUtils && window.dashboardUtils.showNotification) {
+                    window.dashboardUtils.showNotification(data.message, 'error');
+                } else {
+                    alert(data.message);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (window.dashboardUtils && window.dashboardUtils.showNotification) {
+                window.dashboardUtils.showNotification('An error occurred while sending your email. Please try again.', 'error');
+            } else {
+                alert('An error occurred while sending your email. Please try again.');
+            }
+        })
+        .finally(() => {
+            // Reset button
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send Email';
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // File upload preview
+    const fileInput = document.querySelector('#{{ form.attachments.id_for_label }}');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const files = Array.from(this.files);
+            if (files.length > 0) {
+                // Show selected files
+                let fileList = '';
+                files.forEach(file => {
+                    fileList += `<div class="selected-file"><i class="fas fa-file me-2"></i>${file.name}</div>`;
+                });
+                
+                // Create or update file list display
+                let fileListDiv = this.parentNode.querySelector('.file-list');
+                if (!fileListDiv) {
+                    fileListDiv = document.createElement('div');
+                    fileListDiv.className = 'file-list mt-2';
+                    this.parentNode.appendChild(fileListDiv);
+                }
+                fileListDiv.innerHTML = fileList;
+            }
+        });
+    }
+});
+</script>
+{% endblock extra_js %} 

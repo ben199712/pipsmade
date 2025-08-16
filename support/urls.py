@@ -18,6 +18,7 @@ urlpatterns = [
     # Search and quick support
     path('search/', views.search_support, name='search_support'),
     path('quick-help/', views.quick_help, name='quick_help'),
+    path('email-support/', views.email_support, name='email_support'),
 
     # AJAX endpoints
     path('api/search/', views.ajax_search, name='ajax_search'),

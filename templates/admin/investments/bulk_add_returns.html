@@ -1,0 +1,532 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .bulk-return-form {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .bulk-return-form .form-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .bulk-return-form .form-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        
+        .bulk-return-form .form-body {
+            padding: 30px;
+        }
+        
+        .bulk-info {
+            background: #d4edda;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .bulk-info h3 {
+            margin-top: 0;
+            color: #155724;
+            font-size: 18px;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-row label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-row input,
+        .form-row select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-row input:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+        
+        .return-type-toggle {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .return-type-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .return-type-toggle input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .return-type-toggle label:hover {
+            border-color: #28a745;
+            background: #f8f9fa;
+        }
+        
+        .return-type-toggle input[type="radio"]:checked + label {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .investments-selection {
+            margin-top: 30px;
+        }
+        
+        .investments-selection h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .selection-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .selection-controls button {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .selection-controls button:hover {
+            background: #f8f9fa;
+            border-color: #28a745;
+        }
+        
+        .investments-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .investments-table th,
+        .investments-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .investments-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .investments-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .investments-table input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .stats-summary {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .stats-summary h3 {
+            margin-top: 0;
+            color: #1976d2;
+            font-size: 18px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-item h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+            font-size: 24px;
+        }
+        
+        .stat-item small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .bulk-return-form {
+                margin: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .selection-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='investments' %}">Investments</a>
+    &rsaquo; <a href="{% url 'admin:investments_userinvestment_changelist' %}">User investments</a>
+    &rsaquo; Bulk Add Returns
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bulk-return-form">
+    <div class="form-header">
+        <h1>{% trans "Bulk Add Returns" %}</h1>
+        <p>Add the same return percentage to multiple investments at once</p>
+    </div>
+    
+    <div class="form-body">
+        <!-- Bulk Info -->
+        <div class="bulk-info">
+            <h3>📊 Bulk Return Information</h3>
+            <p><strong>Note:</strong> This will apply the same return percentage to all selected investments. The actual dollar amount will vary based on each investment's principal amount.</p>
+        </div>
+        
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Bulk Add Returns Form -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <label for="date">📅 Date</label>
+                <input type="date" id="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div class="form-row">
+                <label for="return_amount">💰 Return Percentage</label>
+                <input type="number" id="return_amount" name="return_amount" step="0.01" min="0" placeholder="Enter percentage (e.g., 2.5 for 2.5%)" required>
+                <small class="text-muted">This percentage will be applied to each investment's principal amount</small>
+            </div>
+            
+            <div class="form-row">
+                <label>📈 Return Type</label>
+                <div class="return-type-toggle">
+                    <input type="radio" id="profit" name="return_type" value="profit" checked>
+                    <label for="profit">
+                        <span style="color: #28a745;">📈</span> Profit
+                    </label>
+                    
+                    <input type="radio" id="loss" name="return_type" value="loss">
+                    <label for="loss">
+                        <span style="color: #dc3545;">📉</span> Loss
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Investment Selection -->
+            <div class="investments-selection">
+                <h3>🎯 Select Investments</h3>
+                
+                <div class="selection-controls">
+                    <button type="button" onclick="selectAll()">Select All</button>
+                    <button type="button" onclick="deselectAll()">Deselect All</button>
+                    <button type="button" onclick="selectActive()">Select Active Only</button>
+                    <span class="text-muted">Selected: <span id="selectedCount">0</span> investments</span>
+                </div>
+                
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="investments-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)"></th>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Current Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for investment in active_investments %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="investment_ids" value="{{ investment.id }}" 
+                                           class="investment-checkbox" onchange="updateSelectedCount()">
+                                </td>
+                                <td>{{ investment.user.get_full_name|default:investment.user.username }}</td>
+                                <td>{{ investment.investment_plan.name }}</td>
+                                <td>${{ investment.amount|floatformat:2 }}</td>
+                                <td>
+                                    <span class="badge badge-{{ investment.status }}">
+                                        {{ investment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>${{ investment.current_value|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'admin:investments_userinvestment_changelist' %}" class="btn btn-secondary">
+                    <span>❌</span> Cancel
+                </a>
+                <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                    <span>✅</span> Add Returns to Selected
+                </button>
+            </div>
+        </form>
+        
+        <!-- Statistics Summary -->
+        <div class="stats-summary">
+            <h3>📈 Summary Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>{{ active_investments.count }}</h4>
+                    <small>Total Active Investments</small>
+                </div>
+                <div class="stat-item">
+                    <h4>${{ active_investments|length|floatformat:0 }}</h4>
+                    <small>Total Users</small>
+                </div>
+                <div class="stat-item">
+                    <h4 id="totalSelectedAmount">$0.00</h4>
+                    <small>Total Selected Amount</small>
+                </div>
+                <div class="stat-item">
+                    <h4 id="estimatedReturn">$0.00</h4>
+                    <small>Estimated Return (2.5%)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    
+    // Initialize selected count
+    updateSelectedCount();
+    
+    // Add event listeners for return amount changes
+    const returnInput = document.getElementById('return_amount');
+    returnInput.addEventListener('input', updateEstimatedReturn);
+});
+
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.investment-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    document.getElementById('selectAllCheckbox').checked = true;
+    updateSelectedCount();
+}
+
+function deselectAll() {
+    const checkboxes = document.querySelectorAll('.investment-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    document.getElementById('selectAllCheckbox').checked = false;
+    updateSelectedCount();
+}
+
+function selectActive() {
+    const checkboxes = document.querySelectorAll('.investment-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    document.getElementById('selectAllCheckbox').checked = true;
+    updateSelectedCount();
+}
+
+function toggleAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.investment-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const selectedCheckboxes = document.querySelectorAll('.investment-checkbox:checked');
+    const count = selectedCheckboxes.length;
+    document.getElementById('selectedCount').textContent = count;
+    
+    // Enable/disable submit button
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = count === 0;
+    
+    // Update total selected amount
+    let totalAmount = 0;
+    selectedCheckboxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const amountCell = row.cells[3]; // Amount column
+        const amountText = amountCell.textContent.replace('$', '').replace(',', '');
+        totalAmount += parseFloat(amountText) || 0;
+    });
+    
+    document.getElementById('totalSelectedAmount').textContent = `$${totalAmount.toFixed(2)}`;
+    
+    // Update estimated return
+    updateEstimatedReturn();
+}
+
+function updateEstimatedReturn() {
+    const returnPercentage = parseFloat(document.getElementById('return_amount').value) || 0;
+    const totalAmount = parseFloat(document.getElementById('totalSelectedAmount').textContent.replace('$', '').replace(',', '')) || 0;
+    
+    if (returnPercentage > 0 && totalAmount > 0) {
+        const estimatedReturn = (returnPercentage / 100) * totalAmount;
+        document.getElementById('estimatedReturn').textContent = `$${estimatedReturn.toFixed(2)}`;
+    } else {
+        document.getElementById('estimatedReturn').textContent = '$0.00';
+    }
+}
+
+// Add event listener for return amount changes
+document.getElementById('return_amount').addEventListener('input', updateEstimatedReturn);
+</script>
+{% endblock %} 

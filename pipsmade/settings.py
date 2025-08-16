@@ -129,17 +129,30 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Configuration (for admin notifications)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # For production
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your email
-EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with your app password
+# Email Configuration (for admin notifications and support)
+# For development - emails will be printed to console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Admin email for notifications
+# For production - uncomment these lines and configure with your email provider
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # or your SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your email
+# EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with your app password
+
+# Email settings for support system
+DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
+SUPPORT_EMAIL = 'support@pipsmade.com'
 ADMIN_EMAIL = 'admin@pipsmade.com'
+
+# Email templates and branding
+SITE_NAME = 'PipsMade'
+SITE_URL = 'http://127.0.0.1:8000'  # Change this in production
+
+# Support system settings
+SUPPORT_RESPONSE_TIME = '2-4 hours'
+SUPPORT_BUSINESS_HOURS = '24/7 Available'
 
 # Login/Logout URLs
 LOGIN_URL = '/login/'

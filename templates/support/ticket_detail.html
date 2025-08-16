@@ -1,0 +1,576 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.id }} - {{ ticket.subject }} - pipsmade{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-ticket-alt me-2 text-primary"></i>
+        Ticket #{{ ticket.id }}
+        <span class="badge bg-{{ ticket.status|yesno:'success,warning,danger' }} ms-2">
+            {{ ticket.get_status_display }}
+        </span>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Ticket Details -->
+        <div class="col-lg-8">
+            <!-- Ticket Information -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-info-circle me-2"></i>Ticket Information</h5>
+                        <div class="ticket-actions">
+                            {% if ticket.status == 'open' %}
+                            <button class="btn btn-sm btn-outline-success" onclick="closeTicket({{ ticket.id }})">
+                                <i class="fas fa-check me-1"></i>Mark Resolved
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Subject</label>
+                                <div class="field-value">{{ ticket.subject }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Category</label>
+                                <div class="field-value">
+                                    <span class="badge bg-primary">{{ ticket.category.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Priority</label>
+                                <div class="field-value">
+                                    <span class="priority-badge {{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Status</label>
+                                <div class="field-value">
+                                    <span class="status-badge {{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Created</label>
+                                <div class="field-value">{{ ticket.created_at|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ticket-field">
+                                <label class="field-label">Last Updated</label>
+                                <div class="field-value">{{ ticket.updated_at|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-description mt-4">
+                        <label class="field-label">Description</label>
+                        <div class="field-value description-text">{{ ticket.description|linebreaks }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Thread -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-comments me-2"></i>Conversation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="messages-thread">
+                        {% for message in messages %}
+                        <div class="message-item {% if message.is_staff_reply %}staff-message{% else %}user-message{% endif %}">
+                            <div class="message-header">
+                                <div class="message-author">
+                                    {% if message.is_staff_reply %}
+                                        <i class="fas fa-headset text-primary me-2"></i>
+                                        <strong>Support Team</strong>
+                                    {% else %}
+                                        <i class="fas fa-user text-success me-2"></i>
+                                        <strong>{{ message.user.get_full_name|default:message.user.username }}</strong>
+                                    {% endif %}
+                                </div>
+                                <div class="message-time">{{ message.created_at|date:"M d, Y H:i" }}</div>
+                            </div>
+                            <div class="message-content">
+                                {{ message.content|linebreaks }}
+                            </div>
+                            {% if message.attachments.all %}
+                            <div class="message-attachments">
+                                <small class="text-muted">Attachments:</small>
+                                {% for attachment in message.attachments.all %}
+                                <div class="attachment-item">
+                                    <i class="fas fa-paperclip me-1"></i>
+                                    <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name|slice:"7:" }}</a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="no-messages text-center text-muted py-4">
+                            <i class="fas fa-comments fa-2x mb-3"></i>
+                            <p>No messages yet. Be the first to add a message!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Message Form -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-reply me-2"></i>Add Message</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="messageForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.message.id_for_label }}" class="form-label">Message</label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.message.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.attachment.id_for_label }}" class="form-label">Attachments (Optional)</label>
+                            {{ form.attachment }}
+                            {% if form.attachment.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.attachment.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Upload screenshots, documents, or other relevant files</small>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <a href="{% url 'support:my_tickets' %}" class="btn btn-light flex-fill">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Tickets
+                            </a>
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if ticket.status == 'open' %}
+                        <button class="btn btn-outline-success" onclick="closeTicket({{ ticket.id }})">
+                            <i class="fas fa-check me-2"></i>Mark as Resolved
+                        </button>
+                        {% endif %}
+                        
+                        <a href="{% url 'support:knowledge_base' %}" class="btn btn-outline-info">
+                            <i class="fas fa-book me-2"></i>Knowledge Base
+                        </a>
+                        
+                        <a href="{% url 'support:faq_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-question-circle me-2"></i>FAQ
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Timeline -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-clock me-2"></i>Timeline</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ ticket.created_at|date:"M d, Y" }}</small>
+                                <div>Ticket Created</div>
+                            </div>
+                        </div>
+                        
+                        {% if ticket.assigned_to %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ ticket.assigned_at|date:"M d, Y"|default:ticket.updated_at|date:"M d, Y" }}</small>
+                                <div>Assigned to Support</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if ticket.status == 'resolved' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ ticket.resolved_at|date:"M d, Y"|default:ticket.updated_at|date:"M d, Y" }}</small>
+                                <div>Resolved</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Ticket Detail Styling */
+.ticket-field {
+    margin-bottom: 1rem;
+}
+
+.field-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.field-value {
+    color: #495057;
+    font-size: 1rem;
+}
+
+.description-text {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+/* Priority Badges */
+.priority-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-badge.low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.priority-badge.medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-badge.high {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.priority-badge.urgent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.open {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.in_progress {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.resolved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.closed {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* Messages Thread */
+.messages-thread {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.message-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #dee2e6;
+}
+
+.message-item.user-message {
+    background: #f8f9fa;
+    border-left-color: #28a745;
+}
+
+.message-item.staff-message {
+    background: #e3f2fd;
+    border-left-color: #007bff;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #495057;
+}
+
+.message-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.message-content {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.message-attachments {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.attachment-item {
+    margin-top: 0.25rem;
+}
+
+.attachment-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.attachment-item a:hover {
+    text-decoration: underline;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -1.5rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    padding-left: 0.5rem;
+}
+
+.timeline-content small {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Form Styling */
+.form-control,
+.form-textarea {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-card {
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .message-time {
+        margin-top: 0.25rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+// Close ticket function
+function closeTicket(ticketId) {
+    if (confirm('Are you sure you want to mark this ticket as resolved?')) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/support/api/ticket/${ticketId}/close/`;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.querySelector('#{{ form.message.id_for_label }}');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(120, this.scrollHeight) + 'px';
+        });
+    }
+    
+    // File upload preview
+    const fileInput = document.querySelector('#{{ form.attachment.id_for_label }}');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const files = Array.from(this.files);
+            if (files.length > 0) {
+                let fileList = '';
+                files.forEach(file => {
+                    fileList += `<div class="attachment-item"><i class="fas fa-file me-1"></i>${file.name}</div>`;
+                });
+                
+                let fileListDiv = this.parentNode.querySelector('.file-list');
+                if (!fileListDiv) {
+                    fileListDiv = document.createElement('div');
+                    fileListDiv.className = 'file-list mt-2';
+                    this.parentNode.appendChild(fileListDiv);
+                }
+                fileListDiv.innerHTML = fileList;
+            }
+        });
+    }
+});
+</script>
+{% endblock extra_js %} 

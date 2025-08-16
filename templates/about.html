@@ -1,46 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - pipsmade</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">
-                <i class="fas fa-chart-line me-2"></i>pipsmade
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="about.html">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-                </ul>
-                <div class="ms-3">
-                    <a href="login.html" class="btn btn-outline-light me-2">Login</a>
-                    <a href="signup.html" class="btn btn-primary">Sign Up</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
+{% load static %}
 
+{% block content %}
     <!-- Hero Section -->
     <section class="page-hero">
         <div class="container">
@@ -253,90 +214,254 @@
                     <p class="mb-0">Join thousands of satisfied investors who trust pipsmade with their financial future.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <a href="signup.html" class="btn btn-light btn-lg">Get Started Today</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'signup' %}" class="btn btn-light btn-lg">Get Started Today</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </section>
+{% endblock content %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <div class="footer-brand">
-                        <h4><i class="fas fa-chart-line me-2"></i>pipsmade</h4>
-                        <p>Professional trading platform helping investors maximize their returns through expert strategies.</p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-linkedin"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <div class="footer-links">
-                        <h5>Platform</h5>
-                        <ul>
-                            <li><a href="#">Trading</a></li>
-                            <li><a href="#">Portfolio</a></li>
-                            <li><a href="#">Analytics</a></li>
-                            <li><a href="#">Mobile App</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <div class="footer-links">
-                        <h5>Company</h5>
-                        <ul>
-                            <li><a href="about.html">About Us</a></li>
-                            <li><a href="contact.html">Contact</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Legal</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <div class="footer-links">
-                        <h5>Support</h5>
-                        <ul>
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">Live Chat</a></li>
-                            <li><a href="#">Documentation</a></li>
-                            <li><a href="#">Status</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <div class="footer-links">
-                        <h5>Legal</h5>
-                        <ul>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms of Service</a></li>
-                            <li><a href="#">Risk Disclosure</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <hr class="footer-divider">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="footer-copyright">© 2024 pipsmade. All rights reserved.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <div class="footer-badges">
-                        <span class="badge">SSL Secured</span>
-                        <span class="badge">Regulated</span>
-                        <span class="badge">Insured</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+{% block extra_css %}
+<style>
+/* About Page Specific Styles */
+.page-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding-top: 100px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/script.js"></script>
-</body>
-</html>
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-stats h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.hero-stats small {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.about-visual {
+    text-align: center;
+}
+
+.team-image {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 60px 40px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.image-placeholder p {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 3rem;
+}
+
+.mission-content .lead {
+    font-size: 1.3rem;
+    color: #495057;
+    margin-bottom: 1.5rem;
+}
+
+.mission-points {
+    margin-top: 2rem;
+}
+
+.point {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.point i {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    color: #007bff;
+}
+
+.mission-visual {
+    text-align: center;
+}
+
+.chart-placeholder {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 80px 40px;
+    border: 2px dashed #dee2e6;
+}
+
+.chart-placeholder i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.chart-placeholder p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.value-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.value-card:hover {
+    transform: translateY(-5px);
+}
+
+.value-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.value-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.value-card h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.value-card p {
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.team-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.team-card:hover {
+    transform: translateY(-5px);
+}
+
+.team-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.team-avatar i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.team-card h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.team-role {
+    color: #007bff;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.team-bio {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.team-social a {
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin: 0 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.team-social a:hover {
+    color: #007bff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .team-image,
+    .chart-placeholder {
+        padding: 40px 20px;
+    }
+    
+    .value-card,
+    .team-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock extra_css %}

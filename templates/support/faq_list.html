@@ -1,0 +1,332 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}FAQ - pipsmade{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-question-circle me-2 text-primary"></i>
+        Frequently Asked Questions
+    </div>
+{% endblock %}
+
+{% block content %}
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Search and Filters -->
+    <div class="dashboard-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Search FAQ</label>
+                    <input type="text" class="form-control" name="search" value="{{ search_query|default:'' }}" placeholder="Search for questions...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FAQ Accordion -->
+    {% if faqs %}
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    {% if search_query or selected_category %}
+                        Found {{ faqs.count }} questions
+                    {% else %}
+                        All Questions
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq{{ faq.id }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ faq.id }}">
+                                <div class="faq-header">
+                                    <span class="faq-question">{{ faq.question }}</span>
+                                    {% if faq.category %}
+                                        <span class="badge bg-primary ms-2">{{ faq.category.name }}</span>
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ faq.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="faq{{ faq.id }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <div class="faq-content">
+                                    {{ faq.answer|linebreaks }}
+                                </div>
+                                <div class="faq-footer mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-eye me-1"></i>{{ faq.view_count }} views
+                                        {% if faq.category %}
+                                            <span class="ms-3">
+                                                <i class="fas fa-tag me-1"></i>{{ faq.category.name }}
+                                            </span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- No FAQs Found -->
+        <div class="dashboard-card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No questions found</h5>
+                <p class="text-muted">
+                    {% if search_query or selected_category %}
+                        Try adjusting your search criteria or 
+                        <a href="{% url 'support:faq_list' %}">view all questions</a>
+                    {% else %}
+                        No frequently asked questions are available at the moment.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Still Need Help?</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Can't find the answer to your question?</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'support:knowledge_base' %}" class="btn btn-outline-info">
+                            <i class="fas fa-book me-2"></i>Knowledge Base
+                        </a>
+                        <a href="{% url 'support:create_ticket' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Create Support Ticket
+                        </a>
+                        <a href="{% url 'support:email_support' %}" class="btn btn-outline-success">
+                            <i class="fas fa-envelope me-2"></i>Email Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-bar me-2 text-primary"></i>FAQ Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-primary mb-1">{{ faqs.count|default:0 }}</h4>
+                                <small class="text-muted">Total Questions</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-warning mb-1">{{ categories.count }}</h4>
+                                <small class="text-muted">Categories</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h4 class="text-success mb-1">
+                                    {% for faq in faqs %}
+                                        {% if faq.view_count > 0 %}{{ faq.view_count }}{% else %}0{% endif %}
+                                    {% endfor %}
+                                </h4>
+                                <small class="text-muted">Total Views</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* FAQ Accordion */
+.accordion-item {
+    border: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.accordion-item:not(:last-child) {
+    margin-bottom: 0.5rem;
+}
+
+.accordion-button {
+    background: #f8f9fa;
+    border: none;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background: #e3f2fd;
+    color: #1976d2;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: #007bff;
+}
+
+.accordion-button:hover {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23007bff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    transition: transform 0.3s ease;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%231976d2'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    transform: rotate(-180deg);
+}
+
+.accordion-body {
+    padding: 1.25rem;
+    background: #ffffff;
+}
+
+/* FAQ Header */
+.faq-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.faq-question {
+    flex: 1;
+    text-align: left;
+}
+
+.faq-header .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    flex-shrink: 0;
+}
+
+/* FAQ Content */
+.faq-content {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.faq-footer {
+    border-top: 1px solid #e9ecef;
+    padding-top: 0.75rem;
+}
+
+/* Stat Items */
+.stat-item h4 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+/* Quick Actions */
+.btn-outline-info:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .faq-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .faq-header .badge {
+        margin-top: 0.5rem;
+        align-self: flex-start;
+    }
+    
+    .stat-item {
+        margin-bottom: 1rem;
+    }
+    
+    .accordion-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .accordion-body {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+// Auto-submit form when category changes
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.querySelector('select[name="category"]');
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    }
+    
+    // Add view count tracking (optional)
+    const accordionButtons = document.querySelectorAll('.accordion-button');
+    accordionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const faqId = this.getAttribute('aria-controls').replace('collapse', '');
+            // Here you could send an AJAX request to increment view count
+            console.log('FAQ viewed:', faqId);
+        });
+    });
+});
+</script>
+{% endblock extra_js %} 

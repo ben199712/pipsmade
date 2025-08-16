@@ -255,6 +255,9 @@
         </nav>
     </div>
 
+    <!-- Mobile Sidebar Backdrop -->
+    <div class="sidebar-backdrop"></div>
+
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Navigation -->
@@ -301,6 +304,65 @@
     
     <!-- Custom JS -->
     <script src="{% static 'js/dashboard.js' %}"></script>
+
+    <!-- Simple Working Hamburger Menu -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Setting up simple hamburger menu');
+            
+            const menuButton = document.querySelector('.sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.querySelector('.sidebar-backdrop');
+            
+            if (menuButton && sidebar && backdrop) {
+                console.log('Found all elements, setting up menu');
+                
+                // Simple click handler
+                menuButton.addEventListener('click', function() {
+                    console.log('Menu button clicked!');
+                    
+                    // Toggle sidebar
+                    if (sidebar.classList.contains('active')) {
+                        // Close sidebar
+                        sidebar.classList.remove('active');
+                        backdrop.classList.remove('active');
+                        document.body.style.overflow = '';
+                        console.log('Sidebar closed');
+                    } else {
+                        // Open sidebar
+                        sidebar.classList.add('active');
+                        backdrop.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                        console.log('Sidebar opened');
+                    }
+                });
+                
+                // Close when clicking backdrop
+                backdrop.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    backdrop.classList.remove('active');
+                    document.body.style.overflow = '';
+                    console.log('Closed via backdrop');
+                });
+                
+                // Close when clicking outside on mobile
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        if (!sidebar.contains(e.target) && !menuButton.contains(e.target)) {
+                            sidebar.classList.remove('active');
+                            backdrop.classList.remove('active');
+                            document.body.style.overflow = '';
+                        }
+                    }
+                });
+                
+                console.log('Hamburger menu setup complete');
+                
+            } else {
+                console.error('Missing elements for hamburger menu');
+            }
+        });
+    </script>
 
     <!-- Alert Notification System -->
     <script>

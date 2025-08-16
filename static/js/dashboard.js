@@ -1,5 +1,6 @@
 // Dashboard JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard JS loaded');
     initializeDashboard();
     initializeCharts();
     initializeSidebar();
@@ -7,13 +8,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize Dashboard
 function initializeDashboard() {
+    console.log('Initializing dashboard...');
+    
     // Sidebar toggle for mobile
     const sidebarToggle = document.querySelector('.sidebar-toggle');
     const sidebar = document.querySelector('.sidebar');
+    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
     
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
+    console.log('Sidebar toggle element:', sidebarToggle);
+    console.log('Sidebar element:', sidebar);
+    console.log('Sidebar backdrop element:', sidebarBackdrop);
+    
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function(e) {
+            console.log('Sidebar toggle clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+    
+    // Close sidebar when clicking backdrop
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', function() {
+            console.log('Backdrop clicked, closing sidebar');
+            closeSidebar();
         });
     }
     
@@ -21,8 +40,15 @@ function initializeDashboard() {
     document.addEventListener('click', function(e) {
         if (window.innerWidth <= 768) {
             if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
+                closeSidebar();
             }
+        }
+    });
+    
+    // Close sidebar on window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeSidebar();
         }
     });
     
@@ -260,5 +286,44 @@ window.dashboardUtils = {
     formatCurrency,
     formatPercentage,
     showNotification,
-    initializeSidebar
+    initializeSidebar,
+    toggleSidebar,
+    closeSidebar
 };
+
+// Sidebar toggle functions
+function toggleSidebar() {
+    console.log('toggleSidebar called');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+    
+    if (sidebar && sidebarBackdrop) {
+        console.log('Toggling sidebar...');
+        sidebar.classList.toggle('active');
+        sidebarBackdrop.classList.toggle('active');
+        
+        // Prevent body scroll when sidebar is open
+        if (sidebar.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+            console.log('Sidebar opened, body scroll disabled');
+        } else {
+            document.body.style.overflow = '';
+            console.log('Sidebar closed, body scroll enabled');
+        }
+    } else {
+        console.error('Sidebar or backdrop not found');
+    }
+}
+
+function closeSidebar() {
+    console.log('closeSidebar called');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+    
+    if (sidebar && sidebarBackdrop) {
+        sidebar.classList.remove('active');
+        sidebarBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+        console.log('Sidebar closed');
+    }
+}

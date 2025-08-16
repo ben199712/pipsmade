@@ -179,11 +179,40 @@ def withdrawal_view(request):
     else:
         form = WithdrawalForm(user=request.user)
 
-    # Get user's wallet balances
-    user_wallets = UserWallet.objects.filter(user=request.user, balance__gt=0)
-
-    # Calculate total balance in USD (simplified)
-    total_balance = sum(wallet.balance for wallet in user_wallets)
+    # Get user's wallet balances (show all wallets, not just those with balance > 0)
+    user_wallets = UserWallet.objects.filter(user=request.user)
+    
+    # Calculate total crypto balance
+    total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
+    
+    # Get portfolio value from investments (same as dashboard)
+    try:
+        from investments.models import UserPortfolio
+        portfolio = UserPortfolio.get_or_create_portfolio(request.user)
+        portfolio.update_portfolio_metrics()
+        total_portfolio_value = portfolio.total_withdrawable  # NEW: Use total_withdrawable instead of total_current_value
+        
+        # Debug information
+        print(f"DEBUG: User: {request.user.username}")
+        print(f"DEBUG: Portfolio total_withdrawable: {portfolio.total_withdrawable}")
+        print(f"DEBUG: Portfolio total_invested: {portfolio.total_invested}")
+        print(f"DEBUG: Portfolio total_profit: {portfolio.total_profit}")
+        print(f"DEBUG: Portfolio active_investments: {portfolio.active_investments}")
+        
+    except Exception as e:
+        print(f"DEBUG: Error getting portfolio: {str(e)}")
+        total_portfolio_value = 0
+    
+    # Total available balance (crypto + portfolio) - This should match dashboard
+    total_available_balance = total_crypto_balance + total_portfolio_value
+    
+    print(f"DEBUG: Total crypto balance: {total_crypto_balance}")
+    print(f"DEBUG: Total portfolio value: {total_portfolio_value}")
+    print(f"DEBUG: Total available balance: {total_available_balance}")
+    
+    # For the withdraw page, we need to show what the dashboard shows
+    # The dashboard shows portfolio.total_current_value, but it should show total_available_balance
+    # Let's make sure the withdraw page shows the correct total
 
     # Get recent withdrawals
     recent_withdrawals = Transaction.objects.filter(
@@ -208,7 +237,10 @@ def withdrawal_view(request):
     context = {
         'form': form,
         'user_wallets': user_wallets,
-        'total_balance': total_balance,
+        'total_crypto_balance': total_crypto_balance,
+        'total_portfolio_value': total_portfolio_value,
+        'total_available_balance': total_available_balance,
+        'total_balance': total_available_balance,  # For backward compatibility
         'total_withdrawals': total_withdrawals,
         'pending_withdrawals': pending_withdrawals,
         'recent_withdrawals': recent_withdrawals,

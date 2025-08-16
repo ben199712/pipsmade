@@ -99,256 +99,501 @@
     transition: opacity 0.3s ease;
 }
 
-.crypto-balance-card.interactive-card:hover .card-overlay {
-    opacity: 1;
+/* Wallet Balance Cards */
+.crypto-balance-card.has-balance {
+    border: 2px solid #10B981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
 }
 
-/* Crypto Icons */
-.crypto-icon {
-    width: 50px;
-    height: 50px;
+.crypto-balance-card.has-balance:hover {
+    border-color: #059669;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+}
+
+.crypto-balance-card.no-balance {
+    border: 2px solid #E5E7EB;
+    background: #F9FAFB;
+    opacity: 0.7;
+}
+
+.crypto-balance-card.no-balance:hover {
+    border-color: #D1D5DB;
+    background: #F3F4F6;
+}
+
+.crypto-balance-card.no-balance .crypto-icon {
+    background: #9CA3AF !important;
+}
+
+.crypto-balance-card.no-balance .balance-value {
+    color: #6B7280;
+}
+
+/* Balance Summary */
+.balance-summary {
+    border: 1px solid #E5E7EB;
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+}
+
+.balance-summary h4 {
+    font-weight: 700;
+}
+
+.balance-summary .text-primary {
+    color: #10B981 !important;
+}
+
+.balance-summary .text-info {
+    color: #3B82F6 !important;
+}
+
+.balance-summary .text-success {
+    color: #059669 !important;
+}
+
+/* Dynamic Activity Items */
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
+    margin-right: 1rem;
+    font-size: 1.1rem;
 }
 
-.crypto-icon.crypto-btc {
-    background: linear-gradient(135deg, #f7931a 0%, #e6820a 100%);
+.activity-icon.deposit {
+    background: linear-gradient(135deg, #28a745, #20c997);
     color: white;
 }
 
-.crypto-icon.crypto-eth {
-    background: linear-gradient(135deg, #627eea 0%, #4f6bd5 100%);
+.activity-icon.deposit.pending {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
     color: white;
 }
 
-.crypto-icon.crypto-usdt {
-    background: linear-gradient(135deg, #26a17b 0%, #1e8a66 100%);
+.activity-icon.withdrawal {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
     color: white;
 }
 
-.crypto-icon.crypto-bnb {
-    background: linear-gradient(135deg, #f3ba2f 0%, #e0a800 100%);
+.activity-icon.withdrawal.pending {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
     color: white;
 }
 
-/* Balance Actions */
-.balance-actions {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.activity-icon.investment {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+    color: white;
 }
 
-.crypto-balance-card:hover .balance-actions {
-    opacity: 1;
+.activity-icon.profit {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: white;
 }
 
-/* Support Options */
-.support-option {
-    text-align: center;
-    padding: 30px 20px;
+.activity-icon.fee {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.activity-icon.bonus {
+    background: linear-gradient(135deg, #e83e8c, #fd7e14);
+    color: white;
+}
+
+.activity-icon.refund {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+}
+
+.activity-info {
+    flex: 1;
+}
+
+.activity-info h6 {
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.activity-info p {
+    margin: 0 0 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.activity-info small {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.activity-amount {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.activity-amount.positive {
+    color: #28a745;
+}
+
+.activity-amount.negative {
+    color: #dc3545;
+}
+
+/* Stats Summary */
+.stats-summary {
+    background: white;
     border-radius: 12px;
-    border: 1px solid #e9ecef;
-    transition: all 0.3s ease;
-    height: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.stats-summary .card-header {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.stats-summary .card-header h5 {
+    margin: 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+.stat-item {
     display: flex;
-    flex-direction: column;
-}
-
-.support-option:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    border-color: #007bff;
-}
-
-.support-option .support-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    color: white;
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    margin: 0 auto 20px;
-    transition: all 0.3s ease;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.support-option:hover .support-icon {
-    transform: scale(1.1);
+.stat-item:last-child {
+    border-bottom: none;
 }
 
-.support-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.stat-value.positive {
+    color: #28a745;
+}
+
+.stat-value.negative {
+    color: #dc3545;
+}
+
+.stat-value.warning {
+    color: #ffc107;
+}
+
+/* Investment Table */
+.investment-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.investment-table .table {
+    margin: 0;
+}
+
+.investment-table .table th {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.investment-table .table td {
+    padding: 1rem;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.investment-table .table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #007bff, #28a745);
+    border-radius: 10px;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 0.8rem;
     font-weight: 500;
-    margin: 10px 0;
 }
 
-.support-status.online {
-    background: #d4edda;
-    color: #155724;
+/* Chart Controls */
+.chart-controls .btn {
+    border-radius: 20px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
-.support-status.offline {
-    background: #f8d7da;
-    color: #721c24;
+.chart-controls .btn.active {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.3);
 }
 
-.support-features {
-    margin: 15px 0;
-    text-align: left;
+.chart-controls .btn:hover:not(.active) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.support-features small {
-    display: block;
-    margin-bottom: 5px;
+/* Empty State Styling */
+.text-center.text-muted.py-4 {
+    padding: 3rem 1rem !important;
+}
+
+.text-center.text-muted.py-4 i {
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.text-center.text-muted.py-4 p {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.text-center.text-muted.py-4 small {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Portfolio Page Responsive Fixes */
+.portfolio-stats .row {
+    margin: 0;
+}
+
+.portfolio-stats .col-6,
+.portfolio-stats .col-md-3 {
+    padding: 0.5rem;
+}
+
+.portfolio-stats h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.portfolio-stats small {
+    font-size: 0.8rem;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.chart-controls .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.portfolio-filters {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.portfolio-filters .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.holdings-table th,
+.holdings-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+}
+
+.asset-info h6 {
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.asset-info small {
+    font-size: 0.75rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.metric-description {
+    font-size: 0.75rem;
     color: #6c757d;
 }
 
-/* Fee Calculator */
-.fee-calculator {
+.transaction-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
     background: #f8f9fa;
     border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
 }
 
-.fee-item {
+.transaction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e9ecef;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
 }
 
-.fee-total {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 18px;
-    color: #28a745;
-    padding: 15px;
-    background: white;
-    border-radius: 8px;
-    border: 2px solid #28a745;
+.transaction-info h6 {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
 }
 
-/* Charts in Stats Cards */
-.stats-chart {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    opacity: 0.3;
+.transaction-info small {
+    font-size: 0.75rem;
 }
 
-/* Quick Actions */
-.quick-actions {
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-top: 3px solid #007bff;
+.transaction-amount {
+    text-align: right;
+    margin-left: auto;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.transaction-amount div {
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+.transaction-amount small {
+    font-size: 0.75rem;
 }
 
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-/* Loading States */
-.loading {
-    position: relative;
-    pointer-events: none;
-}
-
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Responsive Enhancements */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-    .stats-card {
-        margin-bottom: 20px;
+    .portfolio-stats .col-6 {
+        margin-bottom: 1rem;
     }
     
-    .crypto-balance-card {
-        margin-bottom: 15px;
+    .portfolio-stats h4 {
+        font-size: 1rem;
     }
     
-    .support-option {
-        margin-bottom: 20px;
+    .chart-controls,
+    .portfolio-filters {
+        justify-content: center;
+        margin-top: 0.5rem;
     }
     
-    .enhanced-card:hover {
-        transform: none;
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .metric-item {
+        padding: 0.75rem;
+    }
+    
+    .holdings-table {
+        font-size: 0.8rem;
+    }
+    
+    .holdings-table th,
+    .holdings-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .transaction-item {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .transaction-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
     }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .enhanced-card {
-        background: #2d3748;
-        border-color: #4a5568;
-        color: #e2e8f0;
+@media (max-width: 576px) {
+    .portfolio-stats .row {
+        margin: 0 -0.5rem;
     }
     
-    .fee-calculator {
-        background: #4a5568;
-        border-color: #718096;
+    .portfolio-stats .col-6 {
+        padding: 0.5rem 0.25rem;
     }
     
-    .quick-actions {
-        background: #4a5568;
-        border-color: #63b3ed;
+    .chart-controls .btn,
+    .portfolio-filters .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
     }
 }
