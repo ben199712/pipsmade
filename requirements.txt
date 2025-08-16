@@ -20,7 +20,9 @@ Pillow==10.1.0                   # Image processing for proof images
 # UTILITIES (REQUIRED)
 # =============================================================================
 python-dateutil==2.8.2           # Date utilities for investment calculations
-pytz==2023.3                     # Timezone support
+pytz==2023.3    
+psycopg2-binary==2.9.9
+gunicorn==21.2.0                 # Timezone support
 
 # =============================================================================
 # INSTALLATION
