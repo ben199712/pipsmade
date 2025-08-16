@@ -140,7 +140,7 @@ def csrf_test(request):
     if request.method == 'GET':
         # Return CSRF token for testing
         csrf_token = get_token(request)
-        return HttpResponse(f"""
+        html_content = f"""
         <h2>CSRF Test Page</h2>
         <p>CSRF Token: <code>{csrf_token}</code></p>
         <p>Method: {request.method}</p>
@@ -148,17 +148,19 @@ def csrf_test(request):
         
         <h3>Test Form</h3>
         <form method="post">
-            {% csrf_token %}
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
             <input type="text" name="test_field" placeholder="Enter something">
             <button type="submit">Submit</button>
         </form>
-        """.replace('{% csrf_token %}', f'<input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">'))
+        """
+        return HttpResponse(html_content)
     
     elif request.method == 'POST':
         # Test POST request
         test_field = request.POST.get('test_field', 'No data')
-        return HttpResponse(f"""
+        html_content = f"""
         <h2>CSRF Test Success!</h2>
         <p>POST request worked! Test field value: {test_field}</p>
         <p><a href="?">Test Again</a></p>
-        """)
+        """
+        return HttpResponse(html_content)
