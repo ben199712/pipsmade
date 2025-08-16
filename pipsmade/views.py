@@ -4,8 +4,9 @@ from investments.models import InvestmentPlan
 from django.db.models import Min, Max
 import logging
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.middleware.csrf import get_token
 import os
 import sqlite3
 from pathlib import Path
@@ -131,3 +132,33 @@ def test_static(request):
             return HttpResponse("Static file 'test.txt' not found. Static files may not be configured correctly.")
     except Exception as e:
         return HttpResponse(f"Error testing static files: {str(e)}")
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def csrf_test(request):
+    """Test endpoint to debug CSRF issues"""
+    if request.method == 'GET':
+        # Return CSRF token for testing
+        csrf_token = get_token(request)
+        return HttpResponse(f"""
+        <h2>CSRF Test Page</h2>
+        <p>CSRF Token: <code>{csrf_token}</code></p>
+        <p>Method: {request.method}</p>
+        <p>Settings: {os.environ.get('DJANGO_SETTINGS_MODULE', 'not set')}</p>
+        
+        <h3>Test Form</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="test_field" placeholder="Enter something">
+            <button type="submit">Submit</button>
+        </form>
+        """.replace('{% csrf_token %}', f'<input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">'))
+    
+    elif request.method == 'POST':
+        # Test POST request
+        test_field = request.POST.get('test_field', 'No data')
+        return HttpResponse(f"""
+        <h2>CSRF Test Success!</h2>
+        <p>POST request worked! Test field value: {test_field}</p>
+        <p><a href="?">Test Again</a></p>
+        """)

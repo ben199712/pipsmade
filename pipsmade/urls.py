@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from .views import HomeView, AboutView, ContactView, health_check, test_static
+from .views import HomeView, AboutView, ContactView, health_check, test_static, csrf_test
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,6 +16,7 @@ urlpatterns = [
     path('alert-demo/', TemplateView.as_view(template_name='alert_demo.html'), name='alert_demo'),
     path('health/', health_check, name='health_check'),
     path('test-static/', test_static, name='test_static'),
+    path('csrf-test/', csrf_test, name='csrf_test'),
 
     # Authentication URLs
     path('', include('accounts.urls')),
