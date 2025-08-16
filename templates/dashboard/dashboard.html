@@ -6,59 +6,64 @@
 {% block page_title %}Dashboard Overview{% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Chart data from Django context
 const performanceData = {{ performance_data|safe }};
 const allocationData = {{ allocation_data|safe }};
 
-// Initialize charts when page loads
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize charts when page loads - using window.load to avoid conflicts
+window.addEventListener('load', function() {
+    console.log('Dashboard charts initializing...');
     initializeCharts();
 });
 
 function initializeCharts() {
+    console.log('Initializing dashboard charts...');
+    
     // Portfolio Performance Chart
-    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
-    const portfolioChart = new Chart(portfolioCtx, {
-        type: 'line',
-        data: {
-            labels: performanceData.map(item => item.date),
-            datasets: [{
-                label: 'Cumulative Returns',
-                data: performanceData.map(item => item.cumulative),
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                tension: 0.1,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
+    const portfolioCtx = document.getElementById('portfolioChart');
+    if (portfolioCtx) {
+        const portfolioChart = new Chart(portfolioCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: performanceData.map(item => item.date),
+                datasets: [{
+                    label: 'Cumulative Returns',
+                    data: performanceData.map(item => item.cumulative),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toFixed(2);
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+        console.log('Portfolio chart initialized');
+    }
 
     // Asset Allocation Chart
-    if (allocationData.length > 0) {
-        const allocationCtx = document.getElementById('allocationChart').getContext('2d');
-        const allocationChart = new Chart(allocationCtx, {
+    const allocationCtx = document.getElementById('allocationChart');
+    if (allocationCtx && allocationData.length > 0) {
+        const allocationChart = new Chart(allocationCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: allocationData.map(item => item.label),
@@ -84,10 +89,12 @@ function initializeCharts() {
                 }
             }
         });
-    } else {
+        console.log('Allocation chart initialized');
+    } else if (allocationCtx) {
         // Show message if no allocation data
-        document.getElementById('allocationChart').innerHTML = 
+        allocationCtx.innerHTML = 
             '<div class="text-center text-muted py-4"><i class="fas fa-chart-pie fa-3x mb-3"></i><p>No active investments</p></div>';
+        console.log('No allocation data, showing message');
     }
 }
 
@@ -98,8 +105,39 @@ function updateChart(period) {
     
     // Here you would typically make an AJAX call to get data for the selected period
     // For now, we'll just show a message
-    console.log('Updating chart for period:', period);
+    console.log('Chart period changed to:', period);
 }
+
+// Chart controls event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up chart controls...');
+    const chartControls = document.querySelectorAll('.chart-controls .btn');
+    chartControls.forEach(btn => {
+        btn.addEventListener('click', function() {
+            chartControls.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update chart based on selected period
+            const period = this.textContent;
+            updateChart(period);
+        });
+    });
+    console.log('Chart controls setup complete');
+});
+
+// Utility functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    }).format(amount);
+}
+
+function formatPercentage(value) {
+    return (value > 0 ? '+' : '') + value.toFixed(1) + '%';
+}
+
+console.log('Dashboard extra JS loaded successfully');
 </script>
 {% endblock %}
 

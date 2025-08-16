@@ -3,54 +3,14 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard JS loaded');
     initializeDashboard();
     initializeCharts();
-    initializeSidebar();
+    // Removed initializeSidebar() - now handled by base template
 });
 
 // Initialize Dashboard
 function initializeDashboard() {
     console.log('Initializing dashboard...');
     
-    // Sidebar toggle for mobile
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
-    
-    console.log('Sidebar toggle element:', sidebarToggle);
-    console.log('Sidebar element:', sidebar);
-    console.log('Sidebar backdrop element:', sidebarBackdrop);
-    
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function(e) {
-            console.log('Sidebar toggle clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            toggleSidebar();
-        });
-    }
-    
-    // Close sidebar when clicking backdrop
-    if (sidebarBackdrop) {
-        sidebarBackdrop.addEventListener('click', function() {
-            console.log('Backdrop clicked, closing sidebar');
-            closeSidebar();
-        });
-    }
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768) {
-            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                closeSidebar();
-            }
-        }
-    });
-    
-    // Close sidebar on window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            closeSidebar();
-        }
-    });
+    // Removed sidebar toggle code - now handled by base template
     
     // Chart controls
     const chartControls = document.querySelectorAll('.chart-controls .btn');
@@ -192,22 +152,6 @@ function updatePortfolioChart(period) {
     window.portfolioChart.update();
 }
 
-// Initialize Sidebar
-function initializeSidebar() {
-    // Get current page
-    const currentPage = window.location.pathname.split('/').pop();
-    
-    // Update active nav item
-    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        const href = link.getAttribute('href');
-        if (href === currentPage) {
-            link.classList.add('active');
-        }
-    });
-}
-
 // Utility Functions
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
@@ -286,44 +230,5 @@ window.dashboardUtils = {
     formatCurrency,
     formatPercentage,
     showNotification,
-    initializeSidebar,
-    toggleSidebar,
-    closeSidebar
+    // Removed initializeSidebar, toggleSidebar, closeSidebar - now handled by base template
 };
-
-// Sidebar toggle functions
-function toggleSidebar() {
-    console.log('toggleSidebar called');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
-    
-    if (sidebar && sidebarBackdrop) {
-        console.log('Toggling sidebar...');
-        sidebar.classList.toggle('active');
-        sidebarBackdrop.classList.toggle('active');
-        
-        // Prevent body scroll when sidebar is open
-        if (sidebar.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
-            console.log('Sidebar opened, body scroll disabled');
-        } else {
-            document.body.style.overflow = '';
-            console.log('Sidebar closed, body scroll enabled');
-        }
-    } else {
-        console.error('Sidebar or backdrop not found');
-    }
-}
-
-function closeSidebar() {
-    console.log('closeSidebar called');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
-    
-    if (sidebar && sidebarBackdrop) {
-        sidebar.classList.remove('active');
-        sidebarBackdrop.classList.remove('active');
-        document.body.style.overflow = '';
-        console.log('Sidebar closed');
-    }
-}
