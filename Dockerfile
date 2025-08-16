@@ -3,6 +3,7 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=pipsmade.settings_production
 
 # Set work directory
 WORKDIR /app
@@ -10,6 +11,8 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    libjpeg-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -20,8 +23,12 @@ RUN pip install -r requirements.txt
 # Copy project
 COPY . .
 
-# Make startup script executable
-RUN chmod +x start.sh
+# Make startup scripts executable
+RUN chmod +x start.sh start-simple.sh
+
+# Create necessary directories
+RUN mkdir -p staticfiles
+RUN mkdir -p /app/db
 
 # Collect static files
 RUN python manage.py collectstatic --no-input
