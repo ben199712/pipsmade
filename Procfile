@@ -1,1 +1,1 @@
-web: gunicorn pipsmade.wsgi:application --bind 0.0.0.0:$PORT 
+web: ./start-robust.sh 

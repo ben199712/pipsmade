@@ -13,65 +13,65 @@
 
 {% block content %}
     {% if portfolio %}
-    <!-- Portfolio Overview -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Portfolio Performance</h5>
-                    <div class="chart-controls">
+            <!-- Portfolio Overview -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Portfolio Performance</h5>
+                            <div class="chart-controls">
                         <button class="btn btn-sm btn-outline-primary active" onclick="updateChart('90d')">90D</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="updateChart('180d')">180D</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="updateChart('1y')">1Y</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="updateChart('all')">All</button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="portfolio-stats mb-3">
-                        <div class="row text-center">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="portfolio-stats mb-3">
+                                <div class="row text-center">
                             <div class="col-6 col-md-3 mb-3">
                                 <h4 class="text-primary mb-0">${{ portfolio.total_current_value|floatformat:0 }}</h4>
-                                <small>Total Value</small>
-                            </div>
+                                        <small>Total Value</small>
+                                    </div>
                             <div class="col-6 col-md-3 mb-3">
                                 <h4 class="{% if portfolio.total_profit >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
                                     {% if portfolio.total_profit >= 0 %}+{% endif %}${{ portfolio.total_profit|floatformat:0 }}
                                 </h4>
-                                <small>Total Gain</small>
-                            </div>
+                                        <small>Total Gain</small>
+                                    </div>
                             <div class="col-6 col-md-3 mb-3">
                                 <h4 class="{% if portfolio.total_roi_percentage >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
                                     {% if portfolio.total_roi_percentage >= 0 %}+{% endif %}{{ portfolio.total_roi_percentage|floatformat:1 }}%
                                 </h4>
-                                <small>Total Return</small>
-                            </div>
+                                        <small>Total Return</small>
+                                    </div>
                             <div class="col-6 col-md-3 mb-3">
                                 <h4 class="{% if today_return >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
                                     {% if today_return >= 0 %}+{% endif %}{{ today_return|floatformat:1 }}%
                                 </h4>
-                                <small>Today</small>
+                                        <small>Today</small>
+                                    </div>
+                                </div>
                             </div>
+                    <div style="height: 300px;">
+                            <canvas id="portfolioPerformanceChart"></canvas>
+                    </div>
                         </div>
                     </div>
-                    <div style="height: 300px;">
-                        <canvas id="portfolioPerformanceChart"></canvas>
-                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Asset Allocation</h5>
-                </div>
-                <div class="card-body">
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Asset Allocation</h5>
+                        </div>
+                        <div class="card-body">
                     <div style="height: 300px;">
-                        <canvas id="assetAllocationChart"></canvas>
+                            <canvas id="assetAllocationChart"></canvas>
                     </div>
                     {% if allocation_data %}
-                    <div class="allocation-legend mt-3">
+                            <div class="allocation-legend mt-3">
                         {% for asset in allocation_data %}
-                        <div class="legend-item">
+                                <div class="legend-item">
                             <span class="legend-color" style="background: {{ asset.type|asset_color }};"></span>
                             <span>{{ asset.label }} ({{ asset.percentage|floatformat:1 }}%)</span>
                             <strong>${{ asset.value|floatformat:0 }}</strong>
@@ -86,80 +86,80 @@
                     </div>
                     {% endif %}
                 </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Holdings -->
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Your Holdings</h5>
-                    <div class="portfolio-filters">
+            <!-- Holdings -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Your Holdings</h5>
+                            <div class="portfolio-filters">
                         <button class="btn btn-sm btn-outline-primary active" onclick="filterHoldings('all')">All</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="filterHoldings('crypto')">Crypto</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="filterHoldings('stocks')">Stocks</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="filterHoldings('forex')">Forex</button>
                         <button class="btn btn-sm btn-outline-primary" onclick="filterHoldings('bonds')">Bonds</button>
-                    </div>
-                </div>
-                <div class="card-body">
+                            </div>
+                        </div>
+                        <div class="card-body">
                     {% if investments %}
-                    <div class="table-responsive">
-                        <table class="table holdings-table">
-                            <thead>
-                                <tr>
-                                    <th>Asset</th>
+                            <div class="table-responsive">
+                                <table class="table holdings-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
                                     <th class="d-none d-md-table-cell">Holdings</th>
                                     <th class="d-none d-lg-table-cell">Invested</th>
                                     <th>Current Value</th>
                                     <th>ROI</th>
                                     <th class="d-none d-md-table-cell">Status</th>
                                     <th class="d-none d-lg-table-cell">Allocation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                 {% for investment in investments %}
                                 <tr class="holding-row" data-type="{{ investment.investment_plan.plan_type }}">
-                                    <td>
-                                        <div class="asset-info">
+                                            <td>
+                                                <div class="asset-info">
                                             <div class="asset-icon {{ investment.investment_plan.plan_type }}">
                                                 <i class="{{ investment.investment_plan.plan_type|plan_icon }}"></i>
-                                            </div>
-                                            <div>
+                                                    </div>
+                                                    <div>
                                                 <h6 class="mb-0">{{ investment.investment_plan.name }}</h6>
                                                 <small class="text-muted">{{ investment.investment_plan.get_plan_type_display }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
+                                                    </div>
+                                                </div>
+                                            </td>
                                     <td class="d-none d-md-table-cell">${{ investment.amount|floatformat:2 }}</td>
                                     <td class="d-none d-lg-table-cell">${{ investment.amount|floatformat:2 }}</td>
                                     <td>${{ investment.current_value|floatformat:2 }}</td>
                                     <td class="{% if investment.get_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
                                         {% if investment.get_profit >= 0 %}+{% endif %}{{ investment.roi_percentage|floatformat:1 }}%
-                                    </td>
+                                            </td>
                                     <td class="d-none d-md-table-cell">
                                         <span class="badge bg-{% if investment.status == 'active' %}success{% elif investment.status == 'completed' %}primary{% else %}secondary{% endif %}">
                                             {{ investment.get_status_display }}
                                         </span>
-                                    </td>
+                                            </td>
                                     <td class="d-none d-lg-table-cell">
                                         {% if total_portfolio_value > 0 %}
                                         {% widthratio investment.current_value total_portfolio_value 100 as allocation_percent %}
-                                        <div class="allocation-bar">
+                                                <div class="allocation-bar">
                                             <div class="allocation-fill" style="width: {{ allocation_percent }}%;"></div>
-                                        </div>
+                                                </div>
                                         <small>{{ allocation_percent }}%</small>
                                         {% else %}
                                         <small>0%</small>
                                         {% endif %}
-                                    </td>
-                                </tr>
+                                            </td>
+                                        </tr>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </tbody>
+                                </table>
+                            </div>
                     {% else %}
                     <div class="text-center text-muted py-5">
                         <i class="fas fa-chart-line fa-3x mb-3"></i>
@@ -169,81 +169,81 @@
                     </div>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Performance Metrics -->
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Performance Metrics</h5>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="metrics-grid">
-                        <div class="metric-item">
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Performance Metrics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="metrics-grid">
+                                <div class="metric-item">
                             <div class="metric-label">Average Daily Return</div>
                             <div class="metric-value {% if avg_return >= 0 %}text-success{% else %}text-danger{% endif %}">
                                 {% if avg_return >= 0 %}+{% endif %}{{ avg_return|floatformat:2 }}%
                             </div>
                             <div class="metric-description">Daily return average</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Max Drawdown</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Max Drawdown</div>
                             <div class="metric-value text-danger">-{{ max_drawdown|floatformat:1 }}%</div>
-                            <div class="metric-description">Largest peak-to-trough decline</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Volatility</div>
+                                    <div class="metric-description">Largest peak-to-trough decline</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Volatility</div>
                             <div class="metric-value">{{ volatility|floatformat:1 }}%</div>
-                            <div class="metric-description">Standard deviation of returns</div>
-                        </div>
-                        <div class="metric-item">
+                                    <div class="metric-description">Standard deviation of returns</div>
+                                </div>
+                                <div class="metric-item">
                             <div class="metric-label">Best Day</div>
                             <div class="metric-value text-success">+{{ max_return|floatformat:2 }}%</div>
                             <div class="metric-description">Highest daily return</div>
                         </div>
                     </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Recent Transactions</h5>
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5>Recent Transactions</h5>
                     <a href="{% url 'transactions' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body">
+                        </div>
+                        <div class="card-body">
                     {% if recent_transactions %}
-                    <div class="transaction-list">
+                            <div class="transaction-list">
                         {% for transaction in recent_transactions %}
-                        <div class="transaction-item">
+                                <div class="transaction-item">
                             <div class="transaction-icon {{ transaction.transaction_type }}">
                                 <i class="{{ transaction.get_type_icon }}"></i>
-                            </div>
-                            <div class="transaction-info">
+                                    </div>
+                                    <div class="transaction-info">
                                 <h6 class="mb-0">{{ transaction.get_transaction_type_display }}</h6>
                                 <small class="text-muted">{{ transaction.crypto_type }} - {{ transaction.get_status_display }}</small>
-                            </div>
-                            <div class="transaction-amount">
+                                    </div>
+                                    <div class="transaction-amount">
                                 <div>{% if transaction.usd_equivalent %}${{ transaction.usd_equivalent|floatformat:2 }}{% else %}{{ transaction.amount }} {{ transaction.crypto_type }}{% endif %}</div>
                                 <small class="text-muted">{{ transaction.created_at|timesince }} ago</small>
-                            </div>
-                        </div>
+                                    </div>
+                                </div>
                         {% endfor %}
-                    </div>
+                                    </div>
                     {% else %}
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-exchange-alt fa-2x mb-2"></i>
                         <p>No recent transactions</p>
                         <small>Your transaction history will appear here</small>
-                    </div>
+                                    </div>
                     {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
     {% else %}
     <!-- No Portfolio Data -->
     <div class="row g-4">

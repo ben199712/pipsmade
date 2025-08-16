@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libjpeg-dev \
     zlib1g-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -24,17 +25,21 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Make startup scripts executable
-RUN chmod +x start.sh start-simple.sh
+RUN chmod +x start.sh start-simple.sh start-robust.sh start-django.sh
 
 # Create necessary directories
 RUN mkdir -p staticfiles
 RUN mkdir -p /app/db
+RUN mkdir -p /app/media
 
 # Collect static files
-RUN python manage.py collectstatic --no-input
+RUN python manage.py collectstatic --no-input --clear
+
+# Verify static files were collected
+RUN echo "Static files collected:" && ls -la staticfiles/
 
 # Run migrations
 RUN python manage.py migrate
 
-# Start command using startup script
-CMD ["./start.sh"] 
+# Start command using Django-only startup script (most reliable)
+CMD ["./start-django.sh"] 
