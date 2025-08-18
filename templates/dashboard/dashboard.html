@@ -6,123 +6,76 @@
 {% block page_title %}Dashboard Overview{% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- TradingView Widget -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-// Chart data from Django context
-const performanceData = {{ performance_data|safe }};
-const allocationData = {{ allocation_data|safe }};
+// TradingView Chart Widget
+let tradingViewWidget;
 
-// Initialize charts when page loads - using window.load to avoid conflicts
-window.addEventListener('load', function() {
-    console.log('Dashboard charts initializing...');
-    initializeCharts();
-});
-
-function initializeCharts() {
-    console.log('Initializing dashboard charts...');
-    
-    // Portfolio Performance Chart
-    const portfolioCtx = document.getElementById('portfolioChart');
-    if (portfolioCtx) {
-        const portfolioChart = new Chart(portfolioCtx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: performanceData.map(item => item.date),
-                datasets: [{
-                    label: 'Cumulative Returns',
-                    data: performanceData.map(item => item.cumulative),
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                    tension: 0.1,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value.toFixed(2);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        console.log('Portfolio chart initialized');
-    }
-
-    // Asset Allocation Chart
-    const allocationCtx = document.getElementById('allocationChart');
-    if (allocationCtx && allocationData.length > 0) {
-        const allocationChart = new Chart(allocationCtx.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: allocationData.map(item => item.label),
-                datasets: [{
-                    data: allocationData.map(item => item.value),
-                    backgroundColor: [
-                        '#FF6384',
-                        '#36A2EB',
-                        '#FFCE56',
-                        '#4BC0C0',
-                        '#9966FF',
-                        '#FF9F40'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        console.log('Allocation chart initialized');
-    } else if (allocationCtx) {
-        // Show message if no allocation data
-        allocationCtx.innerHTML = 
-            '<div class="text-center text-muted py-4"><i class="fas fa-chart-pie fa-3x mb-3"></i><p>No active investments</p></div>';
-        console.log('No allocation data, showing message');
-    }
+function createTradingViewWidget() {
+    tradingViewWidget = new TradingView.widget({
+        "width": "100%",
+        "height": 500,
+        "symbol": "NASDAQ:AAPL",
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "container_id": "tradingview_chart",
+        "studies": [
+            "RSI@tv-basicstudies",
+            "MACD@tv-basicstudies"
+        ],
+        "show_popup_button": true,
+        "popup_width": "1000",
+        "popup_height": "650"
+    });
 }
 
-function updateChart(period) {
-    // Update active button
-    document.querySelectorAll('.chart-controls .btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    // Here you would typically make an AJAX call to get data for the selected period
-    // For now, we'll just show a message
-    console.log('Chart period changed to:', period);
+// Function to change TradingView symbol
+function changeSymbol(symbol) {
+    if (tradingViewWidget) {
+        // Remove existing widget
+        const container = document.getElementById('tradingview_chart');
+        container.innerHTML = '';
+        
+        // Create new widget with new symbol
+        tradingViewWidget = new TradingView.widget({
+            "width": "100%",
+            "height": 500,
+            "symbol": symbol,
+            "interval": "D",
+            "timezone": "Etc/UTC",
+            "theme": "light",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_chart",
+            "studies": [
+                "RSI@tv-basicstudies",
+                "MACD@tv-basicstudies"
+            ],
+            "show_popup_button": true,
+            "popup_width": "1000",
+            "popup_height": "650"
+        });
+    }
 }
 
 // Chart controls event listeners
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Setting up chart controls...');
-    const chartControls = document.querySelectorAll('.chart-controls .btn');
-    chartControls.forEach(btn => {
-        btn.addEventListener('click', function() {
-            chartControls.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Update chart based on selected period
-            const period = this.textContent;
-            updateChart(period);
-        });
-    });
-    console.log('Chart controls setup complete');
+    
+    // Initialize TradingView widget
+    createTradingViewWidget();
+    
+    console.log('TradingView widget initialized');
 });
 
 // Utility functions
@@ -189,29 +142,20 @@ console.log('Dashboard extra JS loaded successfully');
 
     <!-- Charts Row -->
     <div class="row g-4 mb-4">
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="chart-card">
                 <div class="card-header">
                     <h5>Portfolio Performance (Last 30 Days)</h5>
                     <div class="chart-controls">
-                        <button class="btn btn-sm btn-outline-primary active" onclick="updateChart('30d')">30D</button>
-                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('90d')">90D</button>
-                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('180d')">180D</button>
-                        <button class="btn btn-sm btn-outline-primary" onclick="updateChart('1y')">1Y</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="changeSymbol('NASDAQ:AAPL')">AAPL</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="changeSymbol('NASDAQ:GOOGL')">GOOGL</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="changeSymbol('NASDAQ:MSFT')">MSFT</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="changeSymbol('NASDAQ:TSLA')">TSLA</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="changeSymbol('NASDAQ:NVDA')">NVDA</button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <canvas id="portfolioChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5>Asset Allocation</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="allocationChart"></canvas>
+                    <div id="tradingview_chart"></div>
                 </div>
             </div>
         </div>
@@ -340,7 +284,7 @@ console.log('Dashboard extra JS loaded successfully');
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Crypto Balance</span>
-                        <span class="stat-value">{{ total_crypto_balance|floatformat:8 }}</span>
+                        <span class="stat-value">{{ total_crypto_balance|floatformat:2 }}</span>
                     </div>
                     {% if pending_deposits %}
                     <div class="stat-item">
@@ -415,20 +359,20 @@ console.log('Dashboard extra JS loaded successfully');
             </div>
         </div>
     </div>
-    {% endif %}
     {% else %}
-    <!-- No Portfolio Data Available -->
-    <div class="row g-4">
+    <!-- No Recent Investments -->
+    <div class="row g-4 mt-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h4>Portfolio Data Unavailable</h4>
-                    <p class="text-muted">Unable to load your portfolio information at this time.</p>
-                    <a href="{% url 'investments' %}" class="btn btn-primary">Create Your First Investment</a>
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5>No Recent Investments</h5>
+                    <p class="text-muted">You don't have any active investments yet.</p>
+                    <a href="{% url 'investments' %}" class="btn btn-primary">Start Investing</a>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 {% endblock %}

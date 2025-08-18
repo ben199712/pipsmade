@@ -214,7 +214,7 @@
                     <h5 class="modal-title">Create New Investment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="post" action="{% url 'create_investment' %}">
+                <form method="post" action="{% url 'create_investment' %}" id="investmentForm">
                     {% csrf_token %}
                     <div class="modal-body">
                         <div class="mb-3">
@@ -272,7 +272,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Investment</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Create Investment</button>
                     </div>
                 </form>
             </div>
@@ -390,6 +390,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const amountInput = document.getElementById('investmentAmount');
     const amountHelp = document.getElementById('amountHelp');
     const calculator = document.getElementById('calculator');
+    const investmentForm = document.getElementById('investmentForm');
+    const submitBtn = document.getElementById('submitBtn');
 
     // Handle plan selection
     planSelect.addEventListener('change', function() {
@@ -456,6 +458,90 @@ document.addEventListener('DOMContentLoaded', function() {
             updateCalculator();
         });
     });
+
+    // Handle form submission - SINGLE EVENT LISTENER
+    investmentForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(this);
+        const planId = formData.get('plan_id');
+        const amount = formData.get('amount');
+
+        console.log('DEBUG: Form submission started', { planId, amount });
+        console.log('DEBUG: Form action URL:', this.action);
+        console.log('DEBUG: CSRF token:', formData.get('csrfmiddlewaretoken'));
+
+        if (!planId) {
+            showError('Please select an investment plan', 5000);
+            return false;
+        }
+
+        if (!amount || amount <= 0) {
+            showError('Please enter a valid investment amount', 5000);
+            return false;
+        }
+
+        submitBtn.disabled = true; // Disable button during submission
+        submitBtn.textContent = 'Creating...';
+
+        console.log('DEBUG: Sending fetch request to:', this.action);
+        console.log('DEBUG: Request headers:', {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        });
+        console.log('DEBUG: Form data entries:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`  ${key}: ${value}`);
+        }
+
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            console.log('DEBUG: Response received:', response);
+            console.log('DEBUG: Response status:', response.status);
+            console.log('DEBUG: Response headers:', response.headers);
+            console.log('DEBUG: Response URL:', response.url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('DEBUG: Response data:', data);
+            console.log('DEBUG: Data type:', typeof data);
+            console.log('DEBUG: Data keys:', Object.keys(data));
+            
+            if (data.success) {
+                showSuccess(data.message, 3000);
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('investmentModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                // Redirect to investments page after a short delay
+                setTimeout(() => {
+                    window.location.href = '{% url "investments" %}';
+                }, 2000);
+            } else {
+                showError(data.message || 'Failed to create investment', 5000);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Investment';
+            }
+        })
+        .catch(error => {
+            console.error('DEBUG: Fetch error:', error);
+            showError('Network error or server issue. Please try again later.', 5000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Investment';
+        });
+    });
 });
 
 // Cancel investment function
@@ -478,15 +564,5 @@ function cancelInvestment(investmentId) {
         form.submit();
     }
 }
-
-// Investment form submission with alerts
-document.addEventListener('DOMContentLoaded', function() {
-    const investmentForm = document.querySelector('form[action*="create_investment"]');
-    if (investmentForm) {
-        investmentForm.addEventListener('submit', function(e) {
-            showInfo('Creating your investment...', 3000);
-        });
-    }
-});
 </script>
 {% endblock %}

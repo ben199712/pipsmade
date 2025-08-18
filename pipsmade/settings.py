@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'investments',
     'transactions',
     'support',
+    'user_management.apps.UserManagementConfig',
 ]
 
 MIDDLEWARE = [

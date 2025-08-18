@@ -1,0 +1,314 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .add-profit-form {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 20px auto;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #f093fb;
+        box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.1);
+    }
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+        transition: background-color 0.3s ease;
+    }
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    .profit-calculator {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .calculator-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .calc-item {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+    .calc-value {
+        font-size: 1.3em;
+        font-weight: 600;
+        color: #28a745;
+        margin-bottom: 5px;
+    }
+    .calc-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+    .user-info {
+        background: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+        display: none;
+    }
+    .user-info h4 {
+        margin-top: 0;
+        color: #1976d2;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #333;
+    }
+    .info-value {
+        color: #666;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <a href="{% url 'admin:user_management_usermanagementproxy_changelist' %}" class="btn-back">
+        ← Back to User Management
+    </a>
+    
+    <div class="add-profit-form">
+        <h2>💰 Add Manual Profit to User</h2>
+        <p class="text-muted">Select a user and add manual profit to their portfolio:</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">👤 Select User *</label>
+                <select name="user" class="form-control form-select" required id="userSelect">
+                    <option value="">Choose a user...</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}" data-username="{{ user.username }}">
+                            {{ user.username }} ({{ user.email }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">💵 Profit Amount ($) *</label>
+                <input type="number" name="profit_amount" class="form-control" step="0.01" min="0" required 
+                       placeholder="Enter profit amount" id="profitAmount">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📊 Profit Type</label>
+                <select name="profit_type" class="form-control form-select">
+                    <option value="manual">Manual Profit</option>
+                    <option value="bonus">Bonus</option>
+                    <option value="referral">Referral Bonus</option>
+                    <option value="promotion">Promotional Bonus</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📝 Admin Notes</label>
+                <textarea name="notes" class="form-control" rows="3" 
+                          placeholder="Add notes about this profit (e.g., reason, source, etc.)"></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+                🎯 Add Profit to User
+            </button>
+        </form>
+        
+        <!-- User Portfolio Information -->
+        <div class="user-info" id="userInfo">
+            <h4>📊 User Portfolio Information</h4>
+            <div class="info-row">
+                <span class="info-label">Current Portfolio Value:</span>
+                <span class="info-value" id="currentValue">$0.00</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Invested:</span>
+                <span class="info-value" id="totalInvested">$0.00</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Existing Profits:</span>
+                <span class="info-value" id="existingProfits">$0.00</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Withdrawable:</span>
+                <span class="info-value" id="totalWithdrawable">$0.00</span>
+            </div>
+        </div>
+        
+        <!-- Profit Calculator -->
+        <div class="profit-calculator" id="profitCalculator" style="display: none;">
+            <h4>🧮 Profit Impact Calculator</h4>
+            <p class="text-muted">See how this profit will affect the user's portfolio:</p>
+            
+            <div class="calculator-grid">
+                <div class="calc-item">
+                    <div class="calc-value" id="newPortfolioValue">$0.00</div>
+                    <div class="calc-label">New Portfolio Value</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-value" id="newTotalProfit">$0.00</div>
+                    <div class="calc-label">New Total Profit</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-value" id="newROI">0.00%</div>
+                    <div class="calc-label">New ROI %</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-value" id="newWithdrawable">$0.00</div>
+                    <div class="calc-label">New Withdrawable</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// User portfolio data (this would normally come from the backend)
+const userPortfolios = {
+    {% for user in users %}
+        {{ user.id }}: {
+            username: "{{ user.username }}",
+            currentValue: 0,
+            totalInvested: 0,
+            existingProfits: 0,
+            totalWithdrawable: 0
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Update user info when user is selected
+document.getElementById('userSelect').addEventListener('change', function() {
+    const userId = this.value;
+    const userInfo = document.getElementById('userInfo');
+    const profitCalculator = document.getElementById('profitCalculator');
+    
+    if (userId) {
+        // Show user info
+        userInfo.style.display = 'block';
+        
+        // In a real implementation, you'd fetch this data from the backend
+        // For now, we'll use placeholder data
+        const portfolio = userPortfolios[userId] || {};
+        document.getElementById('currentValue').textContent = `$${portfolio.currentValue || 0}`;
+        document.getElementById('totalInvested').textContent = `$${portfolio.totalInvested || 0}`;
+        document.getElementById('existingProfits').textContent = `$${portfolio.existingProfits || 0}`;
+        document.getElementById('totalWithdrawable').textContent = `$${portfolio.totalWithdrawable || 0}`;
+        
+        // Show profit calculator
+        profitCalculator.style.display = 'block';
+        updateProfitCalculator();
+    } else {
+        userInfo.style.display = 'none';
+        profitCalculator.style.display = 'none';
+    }
+});
+
+// Update profit calculator when amount changes
+document.getElementById('profitAmount').addEventListener('input', updateProfitCalculator);
+
+function updateProfitCalculator() {
+    const userId = document.getElementById('userSelect').value;
+    const profitAmount = parseFloat(document.getElementById('profitAmount').value) || 0;
+    
+    if (userId && profitAmount > 0) {
+        const portfolio = userPortfolios[userId] || {};
+        const currentValue = portfolio.currentValue || 0;
+        const totalInvested = portfolio.totalInvested || 0;
+        const existingProfits = portfolio.existingProfits || 0;
+        const totalWithdrawable = portfolio.totalWithdrawable || 0;
+        
+        // Calculate new values
+        const newPortfolioValue = currentValue + profitAmount;
+        const newTotalProfit = existingProfits + profitAmount;
+        const newROI = totalInvested > 0 ? (newTotalProfit / totalInvested * 100) : 0;
+        const newWithdrawable = totalWithdrawable + profitAmount;
+        
+        // Update calculator display
+        document.getElementById('newPortfolioValue').textContent = `$${newPortfolioValue.toFixed(2)}`;
+        document.getElementById('newTotalProfit').textContent = `$${newTotalProfit.toFixed(2)}`;
+        document.getElementById('newROI').textContent = `${newROI.toFixed(2)}%`;
+        document.getElementById('newWithdrawable').textContent = `$${newWithdrawable.toFixed(2)}`;
+    }
+}
+
+// Add some sample data for demonstration
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulate some portfolio data for demonstration
+    Object.keys(userPortfolios).forEach(userId => {
+        userPortfolios[userId].currentValue = Math.random() * 5000 + 1000;
+        userPortfolios[userId].totalInvested = Math.random() * 3000 + 500;
+        userPortfolios[userId].existingProfits = Math.random() * 2000 + 100;
+        userPortfolios[userId].totalWithdrawable = userPortfolios[userId].currentValue;
+    });
+});
+</script>
+{% endblock %} 

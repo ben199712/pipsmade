@@ -181,6 +181,12 @@ class UserInvestment(models.Model):
         return "unknown"
 
     def save(self, *args, **kwargs):
+        print(f"DEBUG: UserInvestment.save() called for user: {self.user.username if self.user else 'None'}")
+        print(f"DEBUG: start_date: {self.start_date}")
+        print(f"DEBUG: end_date: {self.end_date}")
+        print(f"DEBUG: investment_plan: {self.investment_plan}")
+        print(f"DEBUG: admin_investment_plan: {self.admin_investment_plan}")
+        
         # Ensure only one plan type is set
         if self.investment_plan and self.admin_investment_plan:
             raise ValueError("Cannot have both standard and admin investment plans")
@@ -188,22 +194,34 @@ class UserInvestment(models.Model):
         if not self.investment_plan and not self.admin_investment_plan:
             raise ValueError("Must have either standard or admin investment plan")
         
+        # Ensure start_date is set (it should be auto_now_add=True, but let's be safe)
+        if not self.start_date:
+            from django.utils import timezone
+            self.start_date = timezone.now()
+            print(f"DEBUG: Set start_date to: {self.start_date}")
+        
         # Set end date based on plan duration (only if not set)
         if not self.end_date:
             if self.investment_plan:
                 self.end_date = self.start_date + timedelta(days=self.investment_plan.duration_days)
+                print(f"DEBUG: Set end_date to: {self.end_date} (plan duration: {self.investment_plan.duration_days} days)")
             elif self.admin_investment_plan:
                 self.end_date = self.start_date + timedelta(days=self.admin_investment_plan.duration_days)
+                print(f"DEBUG: Set end_date to: {self.end_date} (admin plan duration: {self.admin_investment_plan.duration_days} days)")
 
         # Set ROI percentage from plan if not specified (only if not set)
         if not self.roi_percentage:
             if self.investment_plan:
                 self.roi_percentage = self.investment_plan.get_average_roi()
+                print(f"DEBUG: Set roi_percentage to: {self.roi_percentage}%")
             elif self.admin_investment_plan:
                 self.roi_percentage = self.admin_investment_plan.roi_percentage
+                print(f"DEBUG: Set roi_percentage to: {self.roi_percentage}%")
 
+        print(f"DEBUG: About to call super().save()")
         # NO AUTOMATIC CALCULATIONS - Admin controls everything
         super().save(*args, **kwargs)
+        print(f"DEBUG: UserInvestment saved successfully with ID: {self.id}")
 
     def get_progress_percentage(self):
         """Get investment progress as percentage"""
@@ -233,6 +251,21 @@ class UserInvestment(models.Model):
     def is_mature(self):
         """Check if investment has matured"""
         return timezone.now() >= self.end_date
+
+    def get_profit(self):
+        """Get current profit for the investment"""
+        return self.total_profit or Decimal('0')
+
+    def get_current_value(self):
+        """Get current value of the investment"""
+        return self.current_value or self.amount
+
+    def get_expected_return(self):
+        """Get expected return amount"""
+        if self.expected_return:
+            return self.expected_return
+        # Calculate based on ROI if expected_return not set
+        return self.amount * (self.roi_percentage / 100)
 
 class InvestmentReturn(models.Model):
     """Track daily returns for investments - ALL VALUES SET MANUALLY BY ADMIN"""

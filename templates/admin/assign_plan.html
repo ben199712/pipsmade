@@ -1,0 +1,254 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .assign-plan-form {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 20px auto;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+        transition: background-color 0.3s ease;
+    }
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    .plan-info {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    .plan-info h4 {
+        margin-top: 0;
+        color: #495057;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .info-item {
+        text-align: center;
+    }
+    .info-value {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #333;
+    }
+    .info-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <a href="{% url 'admin:user_management_usermanagementproxy_changelist' %}" class="btn-back">
+        ← Back to User Management
+    </a>
+    
+    <div class="assign-plan-form">
+        <h2>📊 Assign Investment Plan to User</h2>
+        <p class="text-muted">Select a user and assign them an investment plan with custom amount and ROI:</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">👤 Select User *</label>
+                <select name="user" class="form-control form-select" required>
+                    <option value="">Choose a user...</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📈 Investment Plan *</label>
+                <select name="plan" class="form-control form-select" required>
+                    <option value="">Choose an investment plan...</option>
+                    {% for plan in plans %}
+                        <option value="{{ plan.id }}" data-plan="{{ plan.id }}">
+                            {{ plan.name }} - {{ plan.plan_type|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">💰 Investment Amount ($) *</label>
+                <input type="number" name="amount" class="form-control" step="0.01" min="0" required 
+                       placeholder="Enter investment amount">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📊 ROI Percentage (%)</label>
+                <input type="number" name="roi_percentage" class="form-control" step="0.01" min="0" 
+                       placeholder="Enter ROI percentage (optional)">
+                <small class="text-muted">Leave empty to use plan's default ROI range</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📝 Admin Notes</label>
+                <textarea name="notes" class="form-control" rows="3" 
+                          placeholder="Add any notes about this investment assignment"></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+                🚀 Assign Investment Plan
+            </button>
+        </form>
+        
+        <!-- Plan Information Display -->
+        <div class="plan-info" id="planInfo" style="display: none;">
+            <h4>📋 Selected Plan Details</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-value" id="planName">-</div>
+                    <div class="info-label">Plan Name</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="planType">-</div>
+                    <div class="info-label">Type</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="minInvestment">-</div>
+                    <div class="info-label">Min Investment</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="maxInvestment">-</div>
+                    <div class="info-label">Max Investment</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="minROI">-</div>
+                    <div class="info-label">Min ROI</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="maxROI">-</div>
+                    <div class="info-label">Max ROI</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="duration">-</div>
+                    <div class="info-label">Duration (Days)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Plan data for dynamic display
+const planData = {
+    {% for plan in plans %}
+        {{ plan.id }}: {
+            name: "{{ plan.name }}",
+            type: "{{ plan.plan_type|title }}",
+            minInvestment: "${{ plan.min_investment|floatformat:2 }}",
+            maxInvestment: "{% if plan.max_investment %}${{ plan.max_investment|floatformat:2 }}{% else %}Unlimited{% endif %}",
+            minROI: "{{ plan.min_roi_percentage|floatformat:1 }}%",
+            maxROI: "{{ plan.max_roi_percentage|floatformat:1 }}%",
+            duration: "{{ plan.duration_days }} days"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Show plan information when plan is selected
+document.querySelector('select[name="plan"]').addEventListener('change', function() {
+    const planId = this.value;
+    const planInfo = document.getElementById('planInfo');
+    
+    if (planId && planData[planId]) {
+        const plan = planData[planId];
+        document.getElementById('planName').textContent = plan.name;
+        document.getElementById('planType').textContent = plan.type;
+        document.getElementById('minInvestment').textContent = plan.minInvestment;
+        document.getElementById('maxInvestment').textContent = plan.maxInvestment;
+        document.getElementById('minROI').textContent = plan.minROI;
+        document.getElementById('maxROI').textContent = plan.maxROI;
+        document.getElementById('duration').textContent = plan.duration;
+        planInfo.style.display = 'block';
+    } else {
+        planInfo.style.display = 'none';
+    }
+});
+
+// Auto-fill ROI if plan is selected
+document.querySelector('select[name="plan"]').addEventListener('change', function() {
+    const planId = this.value;
+    const roiField = document.querySelector('input[name="roi_percentage"]');
+    
+    if (planId && planData[planId]) {
+        const plan = planData[planId];
+        const minROI = parseFloat(plan.minROI);
+        const maxROI = parseFloat(plan.maxROI);
+        const avgROI = ((minROI + maxROI) / 2).toFixed(1);
+        roiField.placeholder = `Suggested: ${avgROI}% (${plan.minROI} - ${plan.maxROI})`;
+    }
+});
+</script>
+{% endblock %} 

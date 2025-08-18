@@ -336,12 +336,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'portfolio' %}active{% endif %}" href="{% url 'portfolio' %}">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Portfolio</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'deposit' %}active{% endif %}" href="{% url 'deposit' %}">
                         <i class="fas fa-plus-circle"></i>
                         <span>Deposit</span>
@@ -512,6 +506,7 @@
                 const alertElement = document.createElement('div');
                 alertElement.id = alertId;
                 alertElement.className = `alert alert-notification alert-${type}`;
+                alertElement.setAttribute('data-django-message', 'true'); // Mark for Django message processing
 
                 const iconMap = {
                     success: 'fas fa-check-circle',
@@ -575,34 +570,57 @@
 
         // Initialize global alert system
         const alertSystem = new AlertNotification();
+        
+        // Prevent duplicate Django message processing
+        let djangoMessagesProcessed = false;
 
         // Helper functions for easy access
         function showAlert(message, type = 'success', duration = 5000) {
+            console.log(`showAlert called: "${message}" (${type}) - ${new Date().toISOString()}`);
             alertSystem.show(message, type, duration);
         }
 
         function showSuccess(message, duration = 5000) {
+            console.log(`showSuccess called: "${message}" - ${new Date().toISOString()}`);
             alertSystem.success(message, duration);
         }
 
         function showError(message, duration = 5000) {
+            console.log(`showError called: "${message}" - ${new Date().toISOString()}`);
             alertSystem.error(message, duration);
         }
 
         function showWarning(message, duration = 5000) {
+            console.log(`showWarning called: "${message}" - ${new Date().toISOString()}`);
             alertSystem.warning(message, duration);
         }
 
         function showInfo(message, duration = 5000) {
+            console.log(`showInfo called: "${message}" - ${new Date().toISOString()}`);
             alertSystem.info(message, duration);
         }
 
         // Auto-show Django messages if they exist
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for Django messages and display them
-            const djangoMessages = document.querySelectorAll('.alert');
+            // Prevent duplicate processing
+            if (djangoMessagesProcessed) {
+                console.log('Django messages already processed, skipping...');
+                return;
+            }
+            
+            console.log('Processing Django messages...');
+            djangoMessagesProcessed = true;
+            
+            // Check for Django messages and display them - only process Django message elements
+            const djangoMessages = document.querySelectorAll('.alert[data-django-message="true"]:not([data-processed])');
+            console.log(`Found ${djangoMessages.length} Django messages to process`);
+            
             if (djangoMessages.length > 0) {
-                djangoMessages.forEach(message => {
+                djangoMessages.forEach((message, index) => {
+                    console.log(`Processing message ${index + 1}:`, message.textContent.trim());
+                    // Mark as processed to prevent duplicate handling
+                    message.setAttribute('data-processed', 'true');
+                    
                     const messageText = message.textContent.trim();
                     const messageType = message.className.includes('alert-success') ? 'success' : 
                                      message.className.includes('alert-danger') ? 'error' : 
