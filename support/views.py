@@ -34,6 +34,13 @@ def support_center(request):
     # Get support categories
     categories = SupportCategory.objects.filter(is_active=True)
 
+    # Get user notifications
+    from transactions.models import TransactionNotification
+    unread_notifications = TransactionNotification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).order_by('-created_at')[:10]
+
     # Support statistics (use the unsliced queryset)
     stats = {
         'total_tickets': user_tickets_all.count(),
@@ -47,6 +54,7 @@ def support_center(request):
         'popular_faqs': popular_faqs,
         'categories': categories,
         'stats': stats,
+        'unread_notifications': unread_notifications,
     }
 
     return render(request, 'dashboard/support.html', context)

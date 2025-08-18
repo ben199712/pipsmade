@@ -9,6 +9,7 @@ from django.conf import settings
 from decimal import Decimal
 import random
 from .models import InvestmentPlan, UserInvestment, UserPortfolio
+from transactions.models import TransactionNotification
 from .forms import InvestmentForm
 
 @login_required
@@ -31,6 +32,10 @@ def investments_view(request):
         'portfolio': portfolio,
         'active_investments': user_investments.filter(status='active'),
         'completed_investments': user_investments.filter(status='completed'),
+        'unread_notifications': TransactionNotification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).order_by('-created_at')[:10],
     }
 
     return render(request, 'dashboard/investments.html', context)

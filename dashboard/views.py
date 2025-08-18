@@ -47,6 +47,17 @@ def dashboard_view(request):
         # Get user wallets for asset allocation
         user_wallets = UserWallet.objects.filter(user=request.user)
         
+        # Get user notifications
+        from transactions.models import TransactionNotification
+        unread_notifications = TransactionNotification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).order_by('-created_at')[:10]
+        
+        recent_notifications = TransactionNotification.objects.filter(
+            user=request.user
+        ).order_by('-created_at')[:5]
+        
         # Calculate total crypto balance in USD (simplified - you might want to add real-time rates)
         total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
         
@@ -152,6 +163,8 @@ def dashboard_view(request):
             'monthly_change_percentage': monthly_change_percentage,
             'total_withdrawable': portfolio.total_withdrawable,  # NEW: Total withdrawable amount
             'manual_profit_total': portfolio.manual_profit_total,  # NEW: Manual profit total
+            'unread_notifications': unread_notifications,
+            'recent_notifications': recent_notifications,
         }
         
         return render(request, 'dashboard/dashboard.html', context)
@@ -182,6 +195,8 @@ def dashboard_view(request):
             'monthly_change': 0,
             'monthly_change_percentage': 0,
             'total_withdrawable': 0,
+            'unread_notifications': [],
+            'recent_notifications': [],
         }
         
         return render(request, 'dashboard/dashboard.html', context)
@@ -273,8 +288,15 @@ class PortfolioView(LoginRequiredMixin, TemplateView):
             # Get user wallets
             user_wallets = UserWallet.objects.filter(user=self.request.user)
             
+            # Get user notifications
+            from transactions.models import TransactionNotification
+            unread_notifications = TransactionNotification.objects.filter(
+                user=self.request.user,
+                is_read=False
+            ).order_by('-created_at')[:10]
+            
             # Calculate crypto allocation
-            total_crypto_value = sum(wallet.balance for wallet in user_wallets)  # Simplified - should use real rates
+            total_crypto_value = sum(wallet.balance for wallet in user_wallets)  # Simplified - should use real-time rates
             if total_crypto_value > 0 and total_portfolio_value > 0:
                 crypto_percentage = (total_crypto_value / total_portfolio_value) * 100
             else:
@@ -346,6 +368,7 @@ class PortfolioView(LoginRequiredMixin, TemplateView):
                 'volatility': volatility,
                 'max_drawdown': max_drawdown,
                 'total_portfolio_value': total_portfolio_value,
+                'unread_notifications': unread_notifications,
             })
             
         except Exception as e:
@@ -369,6 +392,7 @@ class PortfolioView(LoginRequiredMixin, TemplateView):
                 'volatility': 0,
                 'max_drawdown': 0,
                 'total_portfolio_value': 0,
+                'unread_notifications': [],
             })
 
         context['page_title'] = 'Portfolio'
@@ -379,6 +403,20 @@ class DepositView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        try:
+            # Get user notifications
+            from transactions.models import TransactionNotification
+            unread_notifications = TransactionNotification.objects.filter(
+                user=self.request.user,
+                is_read=False
+            ).order_by('-created_at')[:10]
+            
+            context['unread_notifications'] = unread_notifications
+        except Exception as e:
+            print(f"DepositView notification error: {str(e)}")
+            context['unread_notifications'] = []
+        
         context['page_title'] = 'Deposit Funds'
         return context
 

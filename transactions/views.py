@@ -551,3 +551,48 @@ def admin_process_withdrawal(request, withdrawal_id):
     }
 
     return render(request, 'transactions/admin_process_withdrawal.html', context)
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """Mark a single notification as read"""
+    try:
+        notification = TransactionNotification.objects.get(
+            id=notification_id,
+            user=request.user
+        )
+        notification.is_read = True
+        notification.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Notification marked as read'
+        })
+    except TransactionNotification.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Notification not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+@login_required
+def mark_all_notifications_read(request):
+    """Mark all user notifications as read"""
+    try:
+        TransactionNotification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'All notifications marked as read'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
