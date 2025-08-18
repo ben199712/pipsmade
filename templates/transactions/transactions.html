@@ -14,7 +14,7 @@
                     <i class="fas fa-arrow-down"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_deposits|floatformat:8 }}</h3>
+                    <h3>${{ total_deposits|floatformat:2 }}</h3>
                     <p>Total Deposits</p>
                     <span class="stats-change positive">All time</span>
                 </div>
@@ -26,7 +26,7 @@
                     <i class="fas fa-arrow-up"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_withdrawals|floatformat:8 }}</h3>
+                    <h3>${{ total_withdrawals|floatformat:2 }}</h3>
                     <p>Total Withdrawals</p>
                     <span class="stats-change neutral">All time</span>
                 </div>
@@ -41,18 +41,6 @@
                     <h3>{{ pending_transactions }}</h3>
                     <p>Pending</p>
                     <span class="stats-change neutral">Awaiting approval</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="stats-card">
-                <div class="stats-icon bg-primary">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <div class="stats-info">
-                    <h3>{{ user_wallets.count }}</h3>
-                    <p>Active Wallets</p>
-                    <span class="stats-change positive">{{ crypto_wallets.count }} available</span>
                 </div>
             </div>
         </div>
@@ -87,37 +75,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Wallet Balances -->
-    {% if user_wallets %}
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5><i class="fas fa-wallet me-2"></i>Your Wallet Balances</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        {% for wallet in user_wallets %}
-                        <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="crypto-balance-card">
-                                <div class="crypto-icon">
-                                    <i class="{{ wallet.get_crypto_type_display|lower }}"></i>
-                                </div>
-                                <div class="crypto-info">
-                                    <h6>{{ wallet.get_crypto_type_display }}</h6>
-                                    <p class="balance">{{ wallet.balance|floatformat:8 }}</p>
-                                    <small class="text-muted">{{ wallet.crypto_type }}</small>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- Transaction History -->
     <div class="row g-4">
@@ -168,9 +125,9 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="amount">{{ transaction.amount|floatformat:8 }}</span>
+                                        <span class="amount">{{ transaction.amount|floatformat:2 }}</span>
                                         {% if transaction.platform_fee > 0 %}
-                                        <small class="text-muted d-block">Fee: {{ transaction.platform_fee|floatformat:8 }}</small>
+                                        <small class="text-muted d-block">Fee: {{ transaction.platform_fee|floatformat:2 }}</small>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -243,32 +200,6 @@
 
 {% block extra_css %}
 <style>
-.crypto-balance-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.crypto-balance-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.crypto-icon {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #28a745;
-}
-
-.balance {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 5px 0;
-    color: #333;
-}
-
 .transaction-type {
     display: flex;
     align-items: center;

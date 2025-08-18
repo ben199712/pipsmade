@@ -13,6 +13,7 @@ from .models import (
     DepositRequest, WithdrawalRequest, TransactionNotification
 )
 from .forms import DepositForm, WithdrawalForm
+from .email_notifications import send_deposit_notification, send_withdrawal_notification
 
 @login_required
 def transactions_view(request):
@@ -35,9 +36,6 @@ def transactions_view(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Get user's wallet balances
-    user_wallets = UserWallet.objects.filter(user=request.user)
-
     # Get available crypto wallets for deposits
     crypto_wallets = CryptoWallet.objects.filter(is_active=True)
 
@@ -56,7 +54,6 @@ def transactions_view(request):
 
     context = {
         'page_obj': page_obj,
-        'user_wallets': user_wallets,
         'crypto_wallets': crypto_wallets,
         'total_deposits': total_deposits,
         'total_withdrawals': total_withdrawals,
@@ -110,6 +107,14 @@ def deposit_view(request):
                 proof_image=proof_image
             )
 
+            # Send admin notification email using the simple email system
+            try:
+                send_deposit_notification(deposit_request)
+                print(f"Deposit notification sent successfully for user {request.user.username}")
+            except Exception as e:
+                # Log error but don't fail deposit request
+                print(f"Failed to send deposit notification: {e}")
+
             messages.success(request, 'Deposit request submitted successfully! It will be reviewed by our team.')
             return redirect('transactions')
     else:
@@ -128,26 +133,31 @@ def deposit_view(request):
 def withdrawal_view(request):
     """Crypto withdrawal page"""
     if request.method == 'POST':
-        form = WithdrawalForm(request.POST, user=request.user)
+        form = WithdrawalForm(request.POST)
         if form.is_valid():
             crypto_type = form.cleaned_data['crypto_type']
             amount = form.cleaned_data['amount']
             destination_address = form.cleaned_data['destination_address']
             network = form.cleaned_data['network']
 
-            # Check user balance
+            # Get user's wallet balance
             try:
                 user_wallet = UserWallet.objects.get(user=request.user, crypto_type=crypto_type)
-                if user_wallet.balance < amount:
-                    messages.error(request, f'Insufficient {crypto_type} balance. Available: {user_wallet.balance}')
-                    return redirect('withdrawal')
             except UserWallet.DoesNotExist:
-                messages.error(request, f'No {crypto_type} wallet found.')
+                messages.error(request, f'You do not have a {crypto_type} wallet.')
+                return redirect('withdrawal')
+
+            # Check if user has sufficient balance
+            if user_wallet.balance < amount:
+                messages.error(request, f'Insufficient {crypto_type} balance. Available: {user_wallet.balance}')
                 return redirect('withdrawal')
 
             # Calculate fees
-            crypto_wallet = CryptoWallet.objects.get(crypto_type=crypto_type)
-            platform_fee = amount * (crypto_wallet.withdrawal_fee_percentage / 100)
+            crypto_wallet = CryptoWallet.objects.filter(crypto_type=crypto_type, is_active=True).first()
+            if crypto_wallet:
+                platform_fee = amount * (crypto_wallet.withdrawal_fee_percentage / 100)
+            else:
+                platform_fee = Decimal('0')
 
             # Create transaction
             transaction = Transaction.objects.create(
@@ -158,7 +168,7 @@ def withdrawal_view(request):
                 crypto_type=crypto_type,
                 to_address=destination_address,
                 platform_fee=platform_fee,
-                user_notes=f"Withdrawal to {destination_address[:20]}..."
+                user_notes=f"Withdrawal via {network}"
             )
 
             # Create withdrawal request
@@ -174,65 +184,41 @@ def withdrawal_view(request):
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
 
-            messages.success(request, 'Withdrawal request submitted successfully! It will be reviewed by our team.')
+            # Send admin notification email using the simple email system
+            try:
+                send_withdrawal_notification(withdrawal_request)
+                print(f"Withdrawal notification sent successfully for user {request.user.username}")
+            except Exception as e:
+                # Log error but don't fail withdrawal request
+                print(f"Failed to send withdrawal notification: {e}")
+
+            messages.success(request, 'Withdrawal request submitted successfully! It will be processed by our team.')
             return redirect('transactions')
     else:
-        form = WithdrawalForm(user=request.user)
+        form = WithdrawalForm()
 
-    # Get user's wallet balances (show all wallets, not just those with balance > 0)
+    # Get user's wallet balances for context
     user_wallets = UserWallet.objects.filter(user=request.user)
     
-    # Calculate total crypto balance
-    total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
-    
-    # Get portfolio value from investments (same as dashboard)
+    # Calculate total available balance
     try:
+        # Calculate crypto balance from user wallets
+        total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
+        
+        # Get portfolio data from investments
         from investments.models import UserPortfolio
-        portfolio = UserPortfolio.get_or_create_portfolio(request.user)
-        portfolio.update_portfolio_metrics()
-        total_portfolio_value = portfolio.total_withdrawable  # NEW: Use total_withdrawable instead of total_current_value
+        try:
+            portfolio = UserPortfolio.objects.get(user=request.user)
+            total_portfolio_value = portfolio.total_current_value or 0
+        except UserPortfolio.DoesNotExist:
+            total_portfolio_value = 0
         
-        # Debug information
-        print(f"DEBUG: User: {request.user.username}")
-        print(f"DEBUG: Portfolio total_withdrawable: {portfolio.total_withdrawable}")
-        print(f"DEBUG: Portfolio total_invested: {portfolio.total_invested}")
-        print(f"DEBUG: Portfolio total_profit: {portfolio.total_profit}")
-        print(f"DEBUG: Portfolio active_investments: {portfolio.active_investments}")
-        
+        total_available_balance = total_crypto_balance + total_portfolio_value
     except Exception as e:
-        print(f"DEBUG: Error getting portfolio: {str(e)}")
+        print(f"Error calculating balances: {e}")
+        total_crypto_balance = 0
         total_portfolio_value = 0
-    
-    # Total available balance (crypto + portfolio) - This should match dashboard
-    total_available_balance = total_crypto_balance + total_portfolio_value
-    
-    print(f"DEBUG: Total crypto balance: {total_crypto_balance}")
-    print(f"DEBUG: Total portfolio value: {total_portfolio_value}")
-    print(f"DEBUG: Total available balance: {total_available_balance}")
-    
-    # For the withdraw page, we need to show what the dashboard shows
-    # The dashboard shows portfolio.total_current_value, but it should show total_available_balance
-    # Let's make sure the withdraw page shows the correct total
-
-    # Get recent withdrawals
-    recent_withdrawals = Transaction.objects.filter(
-        user=request.user,
-        transaction_type='withdrawal'
-    ).order_by('-created_at')[:5]
-
-    # Calculate total withdrawals
-    total_withdrawals = Transaction.objects.filter(
-        user=request.user,
-        transaction_type='withdrawal',
-        status='completed'
-    ).aggregate(total=models.Sum('amount'))['total'] or 0
-
-    # Count pending withdrawals
-    pending_withdrawals = Transaction.objects.filter(
-        user=request.user,
-        transaction_type='withdrawal',
-        status='pending'
-    ).count()
+        total_available_balance = 0
 
     context = {
         'form': form,
@@ -241,9 +227,20 @@ def withdrawal_view(request):
         'total_portfolio_value': total_portfolio_value,
         'total_available_balance': total_available_balance,
         'total_balance': total_available_balance,  # For backward compatibility
-        'total_withdrawals': total_withdrawals,
-        'pending_withdrawals': pending_withdrawals,
-        'recent_withdrawals': recent_withdrawals,
+        'total_withdrawals': Transaction.objects.filter(
+            user=request.user,
+            transaction_type='withdrawal',
+            status='completed'
+        ).aggregate(total=models.Sum('amount'))['total'] or 0,
+        'pending_withdrawals': Transaction.objects.filter(
+            user=request.user,
+            transaction_type='withdrawal',
+            status='pending'
+        ).count(),
+        'recent_withdrawals': Transaction.objects.filter(
+            user=request.user,
+            transaction_type='withdrawal'
+        ).order_by('-created_at')[:5],
     }
 
     return render(request, 'dashboard/withdraw.html', context)

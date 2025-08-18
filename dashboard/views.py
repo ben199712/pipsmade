@@ -387,5 +387,68 @@ class WithdrawView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        try:
+            # Get user's wallet balances
+            from transactions.models import UserWallet, Transaction
+            user_wallets = UserWallet.objects.filter(user=self.request.user)
+            
+            # Calculate crypto balance
+            total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
+            
+            # Get portfolio data
+            from investments.models import UserPortfolio
+            try:
+                portfolio = UserPortfolio.objects.get(user=self.request.user)
+                total_portfolio_value = portfolio.total_current_value or 0
+            except UserPortfolio.DoesNotExist:
+                total_portfolio_value = 0
+            
+            # Calculate total available balance
+            total_available_balance = total_crypto_balance + total_portfolio_value
+            
+            # Get withdrawal statistics
+            total_withdrawals = Transaction.objects.filter(
+                user=self.request.user,
+                transaction_type='withdrawal',
+                status='completed'
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            pending_withdrawals = Transaction.objects.filter(
+                user=self.request.user,
+                transaction_type='withdrawal',
+                status='pending'
+            ).count()
+            
+            recent_withdrawals = Transaction.objects.filter(
+                user=self.request.user,
+                transaction_type='withdrawal'
+            ).order_by('-created_at')[:5]
+            
+            context.update({
+                'user_wallets': user_wallets,
+                'total_crypto_balance': total_crypto_balance,
+                'total_portfolio_value': total_portfolio_value,
+                'total_available_balance': total_available_balance,
+                'total_withdrawals': total_withdrawals,
+                'pending_withdrawals': pending_withdrawals,
+                'recent_withdrawals': recent_withdrawals,
+                'form': None,  # Form will be handled by the template
+            })
+            
+        except Exception as e:
+            print(f"WithdrawView error: {str(e)}")
+            # Provide safe defaults
+            context.update({
+                'user_wallets': [],
+                'total_crypto_balance': 0,
+                'total_portfolio_value': 0,
+                'total_available_balance': 0,
+                'total_withdrawals': 0,
+                'pending_withdrawals': 0,
+                'recent_withdrawals': [],
+                'form': None,
+            })
+        
         context['page_title'] = 'Withdraw Funds'
         return context

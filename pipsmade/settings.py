@@ -130,21 +130,21 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Configuration (for admin notifications and support)
-# For development - emails will be printed to console
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# For production - Gmail SMTP configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'Celewizzy106@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh'  # ← You need to generate this
 
-# For production - uncomment these lines and configure with your email provider
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'  # or your SMTP server
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your email
-# EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with your app password
+# For development - uncomment this line to go back to console output
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Email settings for support system
 DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
 SUPPORT_EMAIL = 'support@pipsmade.com'
-ADMIN_EMAIL = 'admin@pipsmade.com'
+ADMIN_EMAIL = 'Celewizzy106@gmail.com'  # ← CHANGE THIS TO YOUR ACTUAL EMAIL ADDRESS
 
 # Email templates and branding
 SITE_NAME = 'PipsMade'

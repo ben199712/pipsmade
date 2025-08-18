@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from .models import SupportTicket, SupportMessage, SupportCategory, SupportKnowledgeBase, SupportFAQ
 from .forms import SupportTicketForm, SupportMessageForm, QuickSupportForm, AdminTicketUpdateForm, EmailSupportForm
+from .email_notifications import send_support_notification
 
 @login_required
 def support_center(request):
@@ -346,12 +347,10 @@ def email_support(request):
                 ticket = SupportTicket.objects.create(
                     user=request.user,
                     category=category,
-                    subject=f"Email Support: {subject}",
-                    description=message,
                     priority=priority,
-                    status='open',
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                    subject=subject,
+                    message=message,
+                    status='open'
                 )
                 
                 print(f"Ticket created with ID: {ticket.id}")
@@ -359,82 +358,51 @@ def email_support(request):
                 # Handle attachments
                 if attachments:
                     for attachment in attachments:
-                        # Create message with attachment
                         support_message = SupportMessage.objects.create(
                             ticket=ticket,
                             user=request.user,
                             message=f"Email support request from {contact_email}",
                             is_staff_reply=False
                         )
-                        
-                        # Save attachment
                         support_message.attachment = attachment
                         support_message.save()
-                        
                         print(f"Attachment saved: {attachment.name}")
                 
-                # Send confirmation email to user
-                user_subject = f"Support Request Received - #{ticket.id}"
-                user_message = f"""
-                Dear {request.user.get_full_name() or request.user.username},
-
-                Thank you for contacting our support team. We have received your support request and will respond within 2-4 hours.
-
-                Ticket Details:
-                - Ticket ID: #{ticket.id}
-                - Subject: {subject}
-                - Priority: {priority.title()}
-                - Status: Open
-
-                We will contact you at: {contact_email}
-
-                If you have any additional information to add, please reply to this email or add a message to your ticket.
-
-                Best regards,
-                The PipsMade Support Team
-                """
-                
+                # Send admin notification email using the simple email system
                 try:
-                    send_mail(
-                        subject=user_subject,
-                        message=strip_tags(user_message),
-                        from_email=settings.EMAIL_HOST_USER,
-                        recipient_list=[contact_email],
-                        fail_silently=True,
-                    )
-                    print("Confirmation email sent successfully")
+                    send_support_notification(ticket)
+                    print("Admin notification sent successfully via simple email system")
                 except Exception as e:
                     # Log email error but don't fail the request
-                    print(f"Failed to send confirmation email: {e}")
-                
-                # Send notification to admin
-                admin_subject = f"New Email Support Request - #{ticket.id}"
-                admin_message = f"""
-                New email support request received:
+                    print(f"Failed to send admin notification via simple email system: {e}")
+                    
+                    # Fallback to old method
+                    try:
+                        admin_subject = f"New Email Support Request - #{ticket.id}"
+                        admin_message = f"""
+                        New email support request received:
 
-                Ticket ID: #{ticket.id}
-                User: {request.user.get_full_name() or request.user.username} ({request.user.email})
-                Contact Email: {contact_email}
-                Topic: {topic.title()}
-                Priority: {priority.title()}
-                Subject: {subject}
-                Message: {message}
+                        Ticket ID: #{ticket.id}
+                        User: {request.user.get_full_name() or request.user.username} ({request.user.email})
+                        Contact Email: {contact_email}
+                        Topic: {topic.title()}
+                        Priority: {priority.title()}
+                        Subject: {subject}
+                        Message: {message}
 
-                View ticket: {request.build_absolute_uri(f'/admin/support/supportticket/{ticket.id}/')}
-                """
-                
-                try:
-                    send_mail(
-                        subject=admin_subject,
-                        message=strip_tags(admin_message),
-                        from_email=settings.EMAIL_HOST_USER,
-                        recipient_list=[settings.ADMIN_EMAIL],
-                        fail_silently=True,
-                    )
-                    print("Admin notification sent successfully")
-                except Exception as e:
-                    # Log email error but don't fail the request
-                    print(f"Failed to send admin notification: {e}")
+                        View ticket: {request.build_absolute_uri(f'/admin/support/supportticket/{ticket.id}/')}
+                        """
+                        
+                        send_mail(
+                            subject=admin_subject,
+                            message=strip_tags(admin_message),
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[settings.ADMIN_EMAIL],
+                            fail_silently=True,
+                        )
+                        print("Admin notification sent successfully via fallback method")
+                    except Exception as e2:
+                        print(f"Failed to send admin notification via fallback method: {e2}")
                 
                 messages.success(
                     request, 
@@ -449,24 +417,20 @@ def email_support(request):
                 })
                 
             except Exception as e:
-                print(f"Error processing email support: {str(e)}")
-                messages.error(request, f'Failed to send email support request: {str(e)}')
+                print(f"Error in email support: {str(e)}")
                 return JsonResponse({
                     'success': False,
-                    'message': f'Failed to send email: {str(e)}'
-                })
+                    'message': 'An error occurred while processing your request. Please try again.'
+                }, status=500)
         else:
             print(f"Form errors: {form.errors}")
             return JsonResponse({
                 'success': False,
-                'message': 'Please correct the errors in the form.',
+                'message': 'Please correct the errors in your form.',
                 'errors': form.errors
-            })
+            }, status=400)
     
-    # GET request - return form
-    print("Returning email support form")
-    form = EmailSupportForm()
-    return render(request, 'support/email_support.html', {'form': form})
+    return render(request, 'support/email_support.html')
 
 # AJAX Views
 @login_required

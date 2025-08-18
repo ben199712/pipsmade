@@ -13,6 +13,26 @@
     </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Ensure amounts and labels on gradient cards use theme black text */
+.stats-card.gradient-primary .stats-info h3,
+.stats-card.gradient-primary .stats-info p,
+.stats-card.gradient-primary .stats-change,
+.stats-card.gradient-info .stats-info h3,
+.stats-card.gradient-info .stats-info p,
+.stats-card.gradient-info .stats-change {
+	color: #000 !important;
+}
+
+/* Subtle badge backgrounds for contrast on gradients */
+.stats-card.gradient-primary .stats-change,
+.stats-card.gradient-info .stats-change {
+	background: rgba(0,0,0,0.08);
+}
+</style>
+{% endblock %}
+
 {% block content %}
     <!-- Alert Messages -->
     {% if messages %}
@@ -27,13 +47,13 @@
 
     <!-- Main Balance Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <div class="stats-card gradient-primary">
                 <div class="stats-icon">
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_available_balance|floatformat:2 }}</h3>
+                    <h3>${{ total_available_balance|default_if_none:0|floatformat:2 }}</h3>
                     <p>Total Available</p>
                     <span class="stats-change positive">
                         <i class="fas fa-info-circle me-1"></i>Investment + Profit + Crypto
@@ -41,27 +61,13 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="stats-card gradient-success">
-                <div class="stats-icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <div class="stats-info">
-                    <h3>${{ total_crypto_balance|floatformat:2 }}</h3>
-                    <p>Crypto Balance</p>
-                    <span class="stats-change positive">
-                        <i class="fas fa-wallet me-1"></i>Available for withdrawal
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <div class="stats-card gradient-info">
                 <div class="stats-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>${{ total_portfolio_value|floatformat:2 }}</h3>
+                    <h3>${{ total_portfolio_value|default_if_none:0|floatformat:2 }}</h3>
                     <p>Investment Portfolio</p>
                     <span class="stats-change neutral">
                         <i class="fas fa-chart-pie me-1"></i>Investment + Profit
@@ -70,115 +76,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Available Balances with Enhanced Integration -->
-    {% if user_wallets %}
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="dashboard-card enhanced-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5><i class="fas fa-wallet me-2 text-primary"></i>Crypto Wallet Balances</h5>
-                        <small class="text-muted">Only crypto wallet balances can be withdrawn. Investment portfolio value cannot be withdrawn directly.</small>
-                    </div>
-                    <div class="balance-toggle">
-                        <button class="btn btn-sm btn-outline-secondary" id="toggleBalanceView">
-                            <i class="fas fa-eye"></i> Hide Balances
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3" id="walletBalances">
-                        {% for wallet in user_wallets %}
-                        <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="crypto-balance-card interactive-card {% if wallet.balance > 0 %}has-balance{% else %}no-balance{% endif %}"
-                                 data-crypto="{{ wallet.crypto_type }}"
-                                 data-balance="{{ wallet.balance }}"
-                                 onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
-                                <div class="crypto-icon crypto-{{ wallet.crypto_type|lower }}">
-                                    {% if wallet.crypto_type == 'BTC' %}
-                                        <i class="fab fa-bitcoin"></i>
-                                    {% elif wallet.crypto_type == 'ETH' %}
-                                        <i class="fab fa-ethereum"></i>
-                                    {% elif wallet.crypto_type == 'USDT' %}
-                                        <i class="fas fa-dollar-sign"></i>
-                                    {% else %}
-                                        <i class="fas fa-coins"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="crypto-info">
-                                    <h6>{{ wallet.get_crypto_type_display }}</h6>
-                                    <p class="balance" data-balance="{{ wallet.balance }}">
-                                        <span class="balance-value">{{ wallet.balance|floatformat:8 }}</span>
-                                        <span class="balance-hidden" style="display: none;">••••••••</span>
-                                    </p>
-                                    <small class="text-muted">{{ wallet.crypto_type }}</small>
-                                    <div class="balance-actions mt-2">
-                                        {% if wallet.balance > 0 %}
-                                            <button class="btn btn-sm btn-primary" onclick="selectWallet('{{ wallet.crypto_type }}', '{{ wallet.balance }}')">
-                                                <i class="fas fa-arrow-right me-1"></i>Withdraw
-                                            </button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-secondary" disabled>
-                                                <i class="fas fa-plus me-1"></i>Add Funds
-                                            </button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="card-overlay">
-                                    {% if wallet.balance > 0 %}
-                                        <i class="fas fa-mouse-pointer"></i>
-                                        <span>Click to select</span>
-                                    {% else %}
-                                        <i class="fas fa-plus"></i>
-                                        <span>No balance</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- Balance Summary -->
-                    <div class="balance-summary mt-4 p-3 bg-light rounded">
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <h6 class="text-muted mb-1">Total Crypto Balance</h6>
-                                <h4 class="text-primary mb-0">${{ total_crypto_balance|floatformat:2 }}</h4>
-                                <small class="text-muted">Available for withdrawal</small>
-                            </div>
-                            <div class="col-md-4">
-                                <h6 class="text-muted mb-1">Investment Portfolio</h6>
-                                <h4 class="text-info mb-0">${{ total_portfolio_value|floatformat:2 }}</h4>
-                                <small class="text-muted">Cannot be withdrawn directly</small>
-                            </div>
-                            <div class="col-md-4">
-                                <h6 class="text-muted mb-1">Total Available</h6>
-                                <h4 class="text-success mb-0">${{ total_available_balance|floatformat:2 }}</h4>
-                                <small class="text-muted">Dashboard total</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <div class="quick-actions mt-4">
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-outline-primary btn-sm" onclick="refreshBalances()">
-                                <i class="fas fa-sync-alt me-1"></i>Refresh Balances
-                            </button>
-                            <a href="{% url 'deposit' %}" class="btn btn-outline-success btn-sm">
-                                <i class="fas fa-plus me-1"></i>Add Funds
-                            </a>
-                            <a href="{% url 'transactions' %}" class="btn btn-outline-info btn-sm">
-                                <i class="fas fa-history me-1"></i>Transaction History
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- Withdrawal Form -->
     <div class="row g-4">

@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
+from .email_notifications import send_login_notification, send_signup_notification
 
 @csrf_protect
 def login_view(request):
@@ -30,17 +31,13 @@ def login_view(request):
         if user is not None:
             login(request, user)
 
-            # Send admin notification email
+            # Send admin notification email using the simple email system
             try:
-                send_mail(
-                    subject='User Login Notification',
-                    message=f'User {user.get_full_name() or user.username} ({user.email}) has logged in.',
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[settings.ADMIN_EMAIL],
-                    fail_silently=True,
-                )
-            except:
-                pass  # Don't fail login if email fails
+                send_login_notification(user)
+                print(f"Login notification sent successfully for user {user.username}")
+            except Exception as e:
+                # Log error but don't fail login
+                print(f"Failed to send login notification: {e}")
 
             messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
             return redirect('dashboard')
@@ -55,28 +52,19 @@ def signup_view(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
 
-        # Validation
-        if not all([first_name, last_name, email, password, confirm_password]):
+        # Basic validation
+        if not all([email, password, first_name, last_name]):
             messages.error(request, 'All fields are required.')
-            return render(request, 'accounts/signup.html')
-
-        if password != confirm_password:
-            messages.error(request, 'Passwords do not match.')
-            return render(request, 'accounts/signup.html')
-
-        if len(password) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
             return render(request, 'accounts/signup.html')
 
         # Check if user already exists
         if User.objects.filter(email=email).exists():
-            messages.error(request, 'An account with this email already exists.')
+            messages.error(request, 'A user with this email already exists.')
             return render(request, 'accounts/signup.html')
 
         # Create user
@@ -90,17 +78,13 @@ def signup_view(request):
                 last_name=last_name
             )
 
-            # Send admin notification email
+            # Send admin notification email using the simple email system
             try:
-                send_mail(
-                    subject='New User Registration',
-                    message=f'New user {user.get_full_name()} ({user.email}) has registered.',
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[settings.ADMIN_EMAIL],
-                    fail_silently=True,
-                )
-            except:
-                pass  # Don't fail registration if email fails
+                send_signup_notification(user)
+                print(f"Signup notification sent successfully for user {user.username}")
+            except Exception as e:
+                # Log error but don't fail registration
+                print(f"Failed to send signup notification: {e}")
 
             # Auto login after registration
             login(request, user)

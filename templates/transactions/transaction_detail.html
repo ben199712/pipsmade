@@ -53,24 +53,24 @@
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Amount:</span>
-                                    <span class="amount">{{ transaction.amount|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                    <span class="amount">{{ transaction.amount|floatformat:2 }} {{ transaction.crypto_type }}</span>
                                 </div>
                                 {% if transaction.platform_fee > 0 %}
                                 <div class="info-row">
                                     <span class="label">Platform Fee:</span>
-                                    <span class="fee">{{ transaction.platform_fee|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                    <span class="fee">{{ transaction.platform_fee|floatformat:2 }} {{ transaction.crypto_type }}</span>
                                 </div>
                                 {% endif %}
                                 {% if transaction.network_fee > 0 %}
                                 <div class="info-row">
                                     <span class="label">Network Fee:</span>
-                                    <span class="fee">{{ transaction.network_fee|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                    <span class="fee">{{ transaction.network_fee|floatformat:2 }} {{ transaction.crypto_type }}</span>
                                 </div>
                                 {% endif %}
                                 {% if transaction.platform_fee > 0 or transaction.network_fee > 0 %}
                                 <div class="info-row total-row">
                                     <span class="label">Net Amount:</span>
-                                    <span class="net-amount">{{ transaction.net_amount|floatformat:8 }} {{ transaction.crypto_type }}</span>
+                                    <span class="net-amount">{{ transaction.net_amount|floatformat:2 }} {{ transaction.crypto_type }}</span>
                                 </div>
                                 {% endif %}
                             </div>
@@ -423,23 +423,4 @@ function viewOnBlockchain() {
             break;
         case 'ETH':
         case 'USDT':
-            url = `https://etherscan.io/tx/${hash}`;
-            break;
-        case 'BNB':
-            url = `https://bscscan.com/tx/${hash}`;
-            break;
-        default:
-            showInfo('Blockchain explorer not configured for this cryptocurrency');
-            return;
-    }
-    
-    window.open(url, '_blank');
-}
-
-function cancelTransaction() {
-    if (confirm('Are you sure you want to cancel this withdrawal request?')) {
-        showInfo('Cancellation feature coming soon!');
-    }
-}
-</script>
-{% endblock %}
+            url = `https://etherscan.io/tx/${hash}`

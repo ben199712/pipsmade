@@ -108,9 +108,9 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="amount">{{ transaction.amount|floatformat:8 }}</span>
+                                        <span class="amount">{{ transaction.amount|floatformat:2 }}</span>
                                         {% if transaction.platform_fee > 0 %}
-                                        <small class="text-muted d-block">Fee: {{ transaction.platform_fee|floatformat:8 }}</small>
+                                        <small class="text-muted d-block">Fee: {{ transaction.platform_fee|floatformat:2 }}</small>
                                         {% endif %}
                                     </td>
                                     <td>
