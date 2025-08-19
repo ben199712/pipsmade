@@ -9,8 +9,9 @@
 <!-- Override navbar for auth pages -->
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-            <i class="fas fa-chart-line me-2"></i>pipsmade
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
+            <img src="{% static 'img/Upward Growth Logo.png' %}" alt="pipsmade Logo" height="40" class="me-2">
+            <span>pipsmade</span>
         </a>
         <div class="navbar-nav ms-auto">
             <a class="nav-link" href="{% url 'home' %}">Back to Home</a>
@@ -31,7 +32,8 @@
                             <!-- Left Side - Info -->
                             <div class="col-lg-6">
                                 <div class="auth-info">
-                                    <div class="info-content">
+                                    <div class="info-content text-center">
+                                        <img src="{% static 'img/Upward Growth Logo.png' %}" alt="pipsmade Logo" height="80" class="mb-4">
                                         <h3>Join pipsmade Today</h3>
                                         <p>Start your investment journey with professional trading strategies and expert guidance.</p>
                                         
@@ -71,7 +73,8 @@
                             <!-- Right Side - Form -->
                             <div class="col-lg-6">
                                 <div class="auth-form">
-                                    <div class="auth-header">
+                                    <div class="auth-header text-center">
+                                        <img src="{% static 'img/Upward Growth Logo.png' %}" alt="pipsmade Logo" height="60" class="mb-3">
                                         <h2>Create Your Account</h2>
                                         <p>Join thousands of successful investors</p>
                                     </div>
