@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'transactions',
     'support',
     'user_management.apps.UserManagementConfig',
+    'faq.apps.FaqConfig',
 ]
 
 MIDDLEWARE = [

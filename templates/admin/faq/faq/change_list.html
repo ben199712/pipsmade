@@ -1,0 +1,41 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'admin:faq_faqcategory_add' %}" class="addlink">
+            {% blocktrans %}Add Category{% endblocktrans %}
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'admin:faq_faq_add' %}" class="addlink">
+            {% blocktrans %}Add FAQ{% endblocktrans %}
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    <div class="module">
+        <h2>Quick FAQ Management</h2>
+        <div class="description">
+            <p>Manage your FAQ categories and questions here. Categories help organize FAQs by topic, and you can control the order and visibility of each item.</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Categories</h3>
+                <p>Create categories to organize your FAQs by topic (e.g., "Platform & Security", "Support & Contact").</p>
+                <a href="{% url 'admin:faq_faqcategory_changelist' %}" class="button">Manage Categories</a>
+            </div>
+            <div class="col-md-6">
+                <h3>Questions & Answers</h3>
+                <p>Add, edit, and organize individual FAQ questions and answers.</p>
+                <a href="{% url 'admin:faq_faq_changelist' %}" class="button">Manage FAQs</a>
+            </div>
+        </div>
+    </div>
+    
+    {{ block.super }}
+{% endblock %} 
+ 

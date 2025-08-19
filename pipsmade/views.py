@@ -40,6 +40,16 @@ class HomeView(TemplateView):
                     'max_roi': 0,
                 }
                 logger.info("No active investment plans found for homepage")
+            
+            # Get FAQs for the home page
+            try:
+                from faq.models import FAQCategory
+                platform_category = FAQCategory.objects.get(name='Platform & Security', is_active=True)
+                context['faqs'] = platform_category.faqs.filter(is_active=True)[:6]
+                logger.info(f"Loaded {len(context['faqs'])} FAQs for homepage")
+            except Exception as e:
+                logger.warning(f"Could not load FAQs for homepage: {str(e)}")
+                context['faqs'] = []
                 
         except Exception as e:
             logger.error(f"Error loading investment plans for homepage: {str(e)}")
@@ -50,6 +60,7 @@ class HomeView(TemplateView):
                 'min_roi': 0,
                 'max_roi': 0,
             }
+            context['faqs'] = []
         
         return context
 
@@ -67,6 +78,16 @@ class ContactView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Contact Us - pipsmade'
+        
+        # Get FAQs for the contact page
+        try:
+            from faq.models import FAQCategory
+            support_category = FAQCategory.objects.get(name='Support & Contact', is_active=True)
+            context['faqs'] = support_category.faqs.filter(is_active=True)[:3]
+        except Exception as e:
+            logger.warning(f"Could not load FAQs for contact page: {str(e)}")
+            context['faqs'] = []
+        
         return context
 
 def index(request):

@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% load faq_tags %}
+
+{% block title %}Contact Us - pipsmade{% endblock %}
 
 {% block content %}
     <!-- Hero Section -->
@@ -152,42 +155,20 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="accordion" id="contactFAQ">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                    How quickly will I receive a response?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#contactFAQ">
-                                <div class="accordion-body">
-                                    We typically respond to all inquiries within 2-4 hours during business hours. For urgent matters, please use our live chat or call our support line.
+                        {% for faq in faqs %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}">
+                                        {{ faq.question }}
+                                    </button>
+                                </h2>
+                                <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse show" data-bs-parent="#contactFAQ">
+                                    <div class="accordion-body">
+                                        {{ faq.answer }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                    Can I schedule a consultation?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#contactFAQ">
-                                <div class="accordion-body">
-                                    Yes! We offer free 30-minute consultations with our investment advisors. You can schedule one through our booking system or by calling our support team.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                    What information should I prepare?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#contactFAQ">
-                                <div class="accordion-body">
-                                    For investment consultations, please have your financial goals, risk tolerance, and current portfolio information ready. For technical support, account details and error descriptions are helpful.
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

@@ -32,6 +32,9 @@ urlpatterns = [
 
     # Support URLs
     path('support/', include('support.urls')),
+    
+    # FAQ URLs
+    path('faq/', include('faq.urls')),
 ]
 
 # Serve static files during development
