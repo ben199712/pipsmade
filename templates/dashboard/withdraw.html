@@ -81,13 +81,13 @@
                     {% if user_wallets %}
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Important:</strong> Withdrawals are processed manually and may take 1-24 hours.
+                        <strong>Important:</strong> Withdrawals are processing take 1-24 hours.
                         Make sure your destination address is correct as transactions cannot be reversed.
                     </div>
 
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Withdrawal Limits:</strong> You can only withdraw from your crypto wallet balances. 
+                        <strong>Withdrawal Limits:</strong> You can only withdraw to your crypto wallet . 
                         Investment portfolio value cannot be withdrawn directly - you must first liquidate your investments.
                         <br><strong>Available for withdrawal: ${{ total_crypto_balance|floatformat:2 }}</strong>
                     </div>
