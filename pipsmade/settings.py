@@ -150,7 +150,7 @@ ADMIN_EMAIL = 'Celewizzy106@gmail.com'  # ← CHANGE THIS TO YOUR ACTUAL EMAIL A
 
 # Email templates and branding
 SITE_NAME = 'PipsMade'
-SITE_URL = 'http://127.0.0.1:8000'  # Change this in production
+SITE_URL = 'https://pipsmade.com'  # Change this in production
 
 # Support system settings
 SUPPORT_RESPONSE_TIME = '2-4 hours'
@@ -166,7 +166,7 @@ import os
 if os.environ.get('RENDER'):
     # Render.com specific settings
     DEBUG = False
-    ALLOWED_HOSTS = ['.onrender.com']
+    ALLOWED_HOSTS = ['.onrender.com', 'pipsmade.com', 'www.pipsmade.com',]
     
     # Database - Use SQLite for Render.com free tier
     DATABASES = {
@@ -187,7 +187,7 @@ if os.environ.get('RENDER'):
 elif os.environ.get('RAILWAY'):
     # Railway.app specific settings
     DEBUG = False
-    ALLOWED_HOSTS = ['.railway.app', '.up.railway.app']
+    ALLOWED_HOSTS = ['.railway.app', '.up.railway.app', 'pipsmade.com', 'www.pipsmade.com',]
     
     # Database - Use SQLite on Railway (same as local)
     DATABASES = {

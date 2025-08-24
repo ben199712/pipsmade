@@ -6,7 +6,7 @@ import os
 
 # Production settings
 DEBUG = False
-ALLOWED_HOSTS = ['.railway.app', '.up.railway.app', '*']
+ALLOWED_HOSTS = ['.railway.app', '.up.railway.app', 'pipsmade.com', 'www.pipsmade.com',]
 
 # Database - Use SQLite for Railway
 DATABASES = {
@@ -40,6 +40,8 @@ CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
+    'https://pipsmade.com',
+    'https://www.pipsmade.com',
     'https://*.railway.app',
     'https://*.up.railway.app',
     'http://localhost:8000',
