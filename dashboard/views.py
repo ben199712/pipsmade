@@ -1,22 +1,23 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.db.models import Sum, Count, Q
+from django.contrib import messages
+from django.db.models import Sum, Q, Count
 from django.utils import timezone
+from decimal import Decimal
 from datetime import timedelta
 import json
 
+# Import models
+from transactions.models import UserWallet, Transaction, WithdrawalRequest, DepositRequest, TransactionNotification
+from investments.models import UserInvestment, UserPortfolio, InvestmentReturn
+
+# Import forms
+from transactions.forms import WithdrawalForm
+
 @login_required
 def dashboard_view(request):
-    # Import here to avoid circular imports
-    from investments.models import UserPortfolio, UserInvestment, InvestmentReturn
-    from transactions.models import Transaction, UserWallet, DepositRequest, WithdrawalRequest
-    from django.db.models import Sum, Count, Q
-    from django.utils import timezone
-    from datetime import timedelta
-    import json
-
     try:
         # Get or create user portfolio
         portfolio = UserPortfolio.get_or_create_portfolio(request.user)
@@ -73,7 +74,6 @@ def dashboard_view(request):
         total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
         
         # Convert to Decimal to avoid type mismatch with portfolio values
-        from decimal import Decimal
         total_crypto_balance = Decimal(str(total_crypto_balance))
         
         # Get investment plan distribution
@@ -255,14 +255,12 @@ class WithdrawView(LoginRequiredMixin, TemplateView):
         
         try:
             # Get user's wallet balances
-            from transactions.models import UserWallet, Transaction
             user_wallets = UserWallet.objects.filter(user=self.request.user)
             
             # Calculate crypto balance
             total_crypto_balance = sum(wallet.balance for wallet in user_wallets)
             
             # Get portfolio data
-            from investments.models import UserPortfolio
             try:
                 portfolio = UserPortfolio.objects.get(user=self.request.user)
                 total_portfolio_value = portfolio.total_current_value or 0
@@ -290,6 +288,9 @@ class WithdrawView(LoginRequiredMixin, TemplateView):
                 transaction_type='withdrawal'
             ).order_by('-created_at')[:5]
             
+            # Create and initialize the withdrawal form
+            form = WithdrawalForm(user=self.request.user)
+            
             context.update({
                 'user_wallets': user_wallets,
                 'total_crypto_balance': total_crypto_balance,
@@ -298,7 +299,7 @@ class WithdrawView(LoginRequiredMixin, TemplateView):
                 'total_withdrawals': total_withdrawals,
                 'pending_withdrawals': pending_withdrawals,
                 'recent_withdrawals': recent_withdrawals,
-                'form': None,  # Form will be handled by the template
+                'form': form,  # Now properly providing the form
             })
             
         except Exception as e:
@@ -312,8 +313,75 @@ class WithdrawView(LoginRequiredMixin, TemplateView):
                 'total_withdrawals': 0,
                 'pending_withdrawals': 0,
                 'recent_withdrawals': [],
-                'form': None,
+                'form': WithdrawalForm(user=self.request.user),  # Provide form even on error
             })
         
         context['page_title'] = 'Withdraw Funds'
         return context
+
+    def post(self, request, *args, **kwargs):
+        """Handle form submission"""
+        form = WithdrawalForm(request.POST, user=request.user)
+        
+        if form.is_valid():
+            try:
+                crypto_type = form.cleaned_data['crypto_type']
+                amount = form.cleaned_data['amount']
+                destination_address = form.cleaned_data['destination_address']
+                network = form.cleaned_data['network']
+
+                # Get user's wallet balance
+                try:
+                    user_wallet = UserWallet.objects.get(user=request.user, crypto_type=crypto_type)
+                except UserWallet.DoesNotExist:
+                    messages.error(request, f'You do not have a {crypto_type} wallet.')
+                    return self.get(request, *args, **kwargs)
+
+                # Check if user has sufficient balance
+                if user_wallet.balance < amount:
+                    messages.error(request, f'Insufficient {crypto_type} balance. Available: {user_wallet.balance}')
+                    return self.get(request, *args, **kwargs)
+
+                # Calculate fees (default 2% if no specific wallet found)
+                platform_fee = amount * Decimal('0.02')  # 2% default fee
+
+                # Create transaction
+                transaction = Transaction.objects.create(
+                    user=request.user,
+                    transaction_type='withdrawal',
+                    status='pending',
+                    amount=amount,
+                    crypto_type=crypto_type,
+                    to_address=destination_address,
+                    platform_fee=platform_fee,
+                    user_notes=f"Withdrawal via {network}"
+                )
+
+                # Create withdrawal request
+                withdrawal_request = WithdrawalRequest.objects.create(
+                    user=request.user,
+                    transaction=transaction,
+                    crypto_type=crypto_type,
+                    amount=amount,
+                    destination_address=destination_address,
+                    network=network,
+                    platform_fee=platform_fee,
+                    ip_address=request.META.get('REMOTE_ADDR', ''),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+
+                messages.success(request, 'Withdrawal request submitted successfully! It will be processed by our team.')
+                return redirect('transactions')
+                
+            except Exception as e:
+                print(f"Withdrawal creation error: {e}")
+                messages.error(request, 'An error occurred while processing your withdrawal request. Please try again.')
+        else:
+            # Form is invalid, show errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+        
+        # If we get here, there was an error or invalid form
+        # Re-render the page with the form and errors
+        return self.get(request, *args, **kwargs)

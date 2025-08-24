@@ -102,13 +102,23 @@ class WithdrawalForm(forms.Form):
     
     network = forms.ChoiceField(
         choices=[
-            ('ERC-20', 'Ethereum (ERC-20)'),
+            ('BTC', 'Bitcoin Network (BTC)'),
+            ('ETH', 'Ethereum Network (ETH)'),
+            ('ERC-20', 'Ethereum ERC-20 (Tokens)'),
             ('BEP-20', 'Binance Smart Chain (BEP-20)'),
-            ('TRC-20', 'Tron (TRC-20)'),
-            ('BTC', 'Bitcoin Network'),
-            ('LTC', 'Litecoin Network'),
-            ('ADA', 'Cardano Network'),
-            ('DOT', 'Polkadot Network'),
+            ('TRC-20', 'Tron Network (TRC-20)'),
+            ('LTC', 'Litecoin Network (LTC)'),
+            ('BCH', 'Bitcoin Cash Network (BCH)'),
+            ('XRP', 'Ripple Network (XRP)'),
+            ('ADA', 'Cardano Network (ADA)'),
+            ('DOT', 'Polkadot Network (DOT)'),
+            ('SOL', 'Solana Network (SOL)'),
+            ('MATIC', 'Polygon Network (MATIC)'),
+            ('AVAX', 'Avalanche Network (AVAX)'),
+            ('ATOM', 'Cosmos Network (ATOM)'),
+            ('LINK', 'Ethereum ERC-20 (LINK)'),
+            ('UNI', 'Ethereum ERC-20 (UNI)'),
+            ('BNB', 'Binance Smart Chain (BNB)'),
         ],
         widget=forms.Select(attrs={
             'class': 'form-select',
@@ -131,12 +141,49 @@ class WithdrawalForm(forms.Form):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
+        # Define comprehensive crypto choices with proper names
+        crypto_choices = [
+            ('BTC', 'Bitcoin (BTC)'),
+            ('ETH', 'Ethereum (ETH)'),
+            ('USDT', 'Tether (USDT)'),
+            ('LTC', 'Litecoin (LTC)'),
+            ('BCH', 'Bitcoin Cash (BCH)'),
+            ('XRP', 'Ripple (XRP)'),
+            ('ADA', 'Cardano (ADA)'),
+            ('DOT', 'Polkadot (DOT)'),
+            ('LINK', 'Chainlink (LINK)'),
+            ('BNB', 'Binance Coin (BNB)'),
+            ('SOL', 'Solana (SOL)'),
+            ('MATIC', 'Polygon (MATIC)'),
+            ('AVAX', 'Avalanche (AVAX)'),
+            ('UNI', 'Uniswap (UNI)'),
+            ('ATOM', 'Cosmos (ATOM)'),
+        ]
+        
         if user:
             # Get user's available crypto balances
             user_wallets = UserWallet.objects.filter(user=user, balance__gt=0)
-            choices = [(wallet.crypto_type, f"{wallet.crypto_type} (Balance: {wallet.balance})") 
-                      for wallet in user_wallets]
-            self.fields['crypto_type'].choices = choices
+            if user_wallets.exists():
+                # User has wallets with balance - show balance info
+                choices = []
+                for wallet in user_wallets:
+                    # Find the display name for this crypto type
+                    display_name = next((choice[1] for choice in crypto_choices if choice[0] == wallet.crypto_type), wallet.crypto_type)
+                    choices.append((wallet.crypto_type, display_name))
+                
+                # Add other available cryptos without balance info
+                user_crypto_types = [wallet.crypto_type for wallet in user_wallets]
+                for crypto_code, display_name in crypto_choices:
+                    if crypto_code not in user_crypto_types:
+                        choices.append((crypto_code, display_name))
+            else:
+                # User has no wallets, show all available options
+                choices = crypto_choices
+        else:
+            # No user provided, show all available options
+            choices = crypto_choices
+        
+        self.fields['crypto_type'].choices = choices
     
     def clean(self):
         cleaned_data = super().clean()

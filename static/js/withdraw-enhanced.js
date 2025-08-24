@@ -3,11 +3,16 @@
  * Provides interactive features and better user experience
  */
 
+console.log('withdraw-enhanced.js loaded successfully');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Starting initialization');
     initializeWithdrawPage();
 });
 
 function initializeWithdrawPage() {
+    console.log('initializeWithdrawPage called');
+    
     // Initialize all components
     initializeWalletSelection();
     initializeFormValidation();
@@ -16,14 +21,36 @@ function initializeWithdrawPage() {
     initializeFeeCalculator();
     initializeCharts();
     
+    // Simple test: Check if we can find the submit button
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        console.log('Found submit button:', submitBtn);
+        console.log('Submit button disabled state:', submitBtn.disabled);
+        
+        // Add a test button to manually enable submit button
+        const testButton = document.createElement('button');
+        testButton.type = 'button';
+        testButton.className = 'btn btn-info btn-sm ms-2';
+        testButton.textContent = 'TEST: Enable Submit';
+        testButton.onclick = function() {
+            submitBtn.disabled = false;
+            console.log('Manually enabled submit button');
+        };
+        
+        // Insert test button after submit button
+        submitBtn.parentNode.insertBefore(testButton, submitBtn.nextSibling);
+    } else {
+        console.error('Submit button not found!');
+    }
+    
     console.log('Enhanced withdrawal page initialized');
 }
 
 // Wallet Selection Functionality
 function initializeWalletSelection() {
     const walletCards = document.querySelectorAll('.crypto-balance-card.interactive-card');
-    const cryptoSelect = document.getElementById('id_crypto_type');
-    const amountInput = document.getElementById('id_amount');
+    const cryptoSelect = document.getElementById('cryptoType');
+    const amountInput = document.getElementById('withdrawAmount');
     const maxButton = document.getElementById('maxButton');
     
     // Add click handlers to wallet cards
@@ -64,14 +91,20 @@ function initializeWalletSelection() {
 
 // Wallet Selection Function
 function selectWallet(crypto, balance) {
-    const cryptoSelect = document.getElementById('id_crypto_type');
-    const amountInput = document.getElementById('id_amount');
+    const cryptoSelect = document.getElementById('cryptoType');
+    const amountInput = document.getElementById('withdrawAmount');
     const availableBalanceText = document.getElementById('availableBalance');
+    const networkSelect = document.getElementById('network');
     
     // Update form fields
     if (cryptoSelect) {
         cryptoSelect.value = crypto;
         cryptoSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Update network field based on selected crypto
+    if (networkSelect) {
+        updateNetworkChoices(crypto);
     }
     
     // Update available balance text
@@ -101,61 +134,122 @@ function selectWallet(crypto, balance) {
     showNotification(`Selected ${crypto} wallet with ${balance} available`, 'success');
 }
 
+// Update network choices based on selected cryptocurrency
+function updateNetworkChoices(cryptoType) {
+    const networkSelect = document.getElementById('network');
+    if (!networkSelect) return;
+    
+    // Define network mappings for each crypto type
+    const networkMappings = {
+        'BTC': ['BTC'],
+        'ETH': ['ETH', 'ERC-20'],
+        'USDT': ['ERC-20', 'BEP-20', 'TRC-20'],
+        'LTC': ['LTC'],
+        'BCH': ['BCH'],
+        'XRP': ['XRP'],
+        'ADA': ['ADA'],
+        'DOT': ['DOT'],
+        'LINK': ['ERC-20'],
+        'BNB': ['BEP-20'],
+        'SOL': ['SOL'],
+        'MATIC': ['MATIC'],
+        'AVAX': ['AVAX'],
+        'UNI': ['ERC-20'],
+        'ATOM': ['ATOM']
+    };
+    
+    // Get available networks for selected crypto
+    const availableNetworks = networkMappings[cryptoType] || ['ERC-20', 'BEP-20', 'TRC-20'];
+    
+    // Clear current options
+    networkSelect.innerHTML = '';
+    
+    // Add new options
+    availableNetworks.forEach(network => {
+        const option = document.createElement('option');
+        option.value = network;
+        
+        // Get display name for network
+        const networkNames = {
+            'BTC': 'Bitcoin Network (BTC)',
+            'ETH': 'Ethereum Network (ETH)',
+            'ERC-20': 'Ethereum ERC-20 (Tokens)',
+            'BEP-20': 'Binance Smart Chain (BEP-20)',
+            'TRC-20': 'Tron Network (TRC-20)',
+            'LTC': 'Litecoin Network (LTC)',
+            'BCH': 'Bitcoin Cash Network (BCH)',
+            'XRP': 'Ripple Network (XRP)',
+            'ADA': 'Cardano Network (ADA)',
+            'DOT': 'Polkadot Network (DOT)',
+            'SOL': 'Solana Network (SOL)',
+            'MATIC': 'Polygon Network (MATIC)',
+            'AVAX': 'Avalanche Network (AVAX)',
+            'ATOM': 'Cosmos Network (ATOM)'
+        };
+        
+        option.textContent = networkNames[network] || network;
+        networkSelect.appendChild(option);
+    });
+    
+    // Set default selection
+    if (availableNetworks.length > 0) {
+        networkSelect.value = availableNetworks[0];
+    }
+}
+
 // Form Validation
 function initializeFormValidation() {
+    console.log('initializeFormValidation called');
+    
     const form = document.getElementById('withdrawForm');
     const submitBtn = document.getElementById('submitBtn');
     const confirmCheckbox = document.getElementById('confirmWithdrawal');
     
-    if (form) {
-        form.addEventListener('input', validateForm);
-        form.addEventListener('change', validateForm);
+    console.log('Basic elements found:', {
+        form: !!form,
+        submitBtn: !!submitBtn,
+        confirmCheckbox: !!confirmCheckbox
+    });
+    
+    // Simple approach: Just enable button when checkbox is checked
+    if (confirmCheckbox && submitBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            console.log('Checkbox changed, checked:', this.checked);
+            submitBtn.disabled = !this.checked;
+            console.log('Submit button disabled:', submitBtn.disabled);
+        });
+        
+        // Initial state
+        submitBtn.disabled = !confirmCheckbox.checked;
+        console.log('Initial submit button state - disabled:', submitBtn.disabled);
+        
+        // Add a manual enable button for testing
+        const manualEnableBtn = document.createElement('button');
+        manualEnableBtn.type = 'button';
+        manualEnableBtn.className = 'btn btn-success btn-sm ms-2';
+        manualEnableBtn.textContent = 'Enable Submit';
+        manualEnableBtn.onclick = function() {
+            submitBtn.disabled = false;
+            console.log('Manually enabled submit button');
+        };
+        
+        // Insert manual enable button after submit button
+        submitBtn.parentNode.insertBefore(manualEnableBtn, submitBtn.nextSibling);
     }
     
-    if (confirmCheckbox) {
-        confirmCheckbox.addEventListener('change', function() {
-            if (submitBtn) {
-                submitBtn.disabled = !this.checked;
+    // Add form submission handler
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('Form submission attempted');
+            // Allow submission if checkbox is checked
+            if (!confirmCheckbox.checked) {
+                e.preventDefault();
+                console.log('Checkbox not checked, preventing submission');
+                return false;
             }
+            console.log('Form submission allowed');
         });
     }
-}
-
-function validateForm() {
-    const cryptoSelect = document.getElementById('id_crypto_type');
-    const amountInput = document.getElementById('id_amount');
-    const destinationInput = document.getElementById('id_destination_address');
-    const confirmAddressInput = document.getElementById('id_confirm_address');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    let isValid = true;
-    
-    // Validate crypto selection
-    if (!cryptoSelect?.value) {
-        isValid = false;
-    }
-    
-    // Validate amount
-    if (!amountInput?.value || parseFloat(amountInput.value) <= 0) {
-        isValid = false;
-    }
-    
-    // Validate addresses match
-    if (destinationInput?.value !== confirmAddressInput?.value) {
-        isValid = false;
-        if (confirmAddressInput?.value) {
-            showFieldError(confirmAddressInput, 'Addresses do not match');
-        }
-    } else if (confirmAddressInput?.value) {
-        clearFieldError(confirmAddressInput);
-    }
-    
-    // Update submit button
-    if (submitBtn) {
-        submitBtn.disabled = !isValid || !document.getElementById('confirmWithdrawal')?.checked;
-    }
-    
-    return isValid;
 }
 
 // Balance Toggle Functionality
@@ -219,8 +313,8 @@ function initializeCounterAnimations() {
 
 // Fee Calculator
 function initializeFeeCalculator() {
-    const amountInput = document.getElementById('id_amount');
-    const cryptoSelect = document.getElementById('id_crypto_type');
+    const amountInput = document.getElementById('withdrawAmount');
+    const cryptoSelect = document.getElementById('cryptoType');
     
     if (amountInput) {
         amountInput.addEventListener('input', calculateFees);
@@ -232,8 +326,8 @@ function initializeFeeCalculator() {
 }
 
 function calculateFees() {
-    const amount = parseFloat(document.getElementById('id_amount')?.value) || 0;
-    const crypto = document.getElementById('id_crypto_type')?.value;
+    const amount = parseFloat(document.getElementById('withdrawAmount')?.value) || 0;
+    const crypto = document.getElementById('cryptoType')?.value;
     
     if (amount > 0 && crypto) {
         // Fee percentages (should match backend)
