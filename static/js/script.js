@@ -176,7 +176,7 @@ function initChatSimulation() {
     const simulatedMessages = [
         {
             sender: 'Market Alert',
-            content: '🔥 ETH breaking $2,400 resistance level!',
+            content: '🔥 ETH breaking $4,500 resistance level!',
             delay: 15000
         },
         {
@@ -186,7 +186,7 @@ function initChatSimulation() {
         },
         {
             sender: 'Trading Bot',
-            content: '⚡ Executing buy order for AAPL at $175.50',
+            content: '⚡ Executing buy order for AAPL at $230.50',
             delay: 45000
         }
     ];
