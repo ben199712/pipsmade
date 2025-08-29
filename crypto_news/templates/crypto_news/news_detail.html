@@ -6,63 +6,76 @@
 {% block content %}
 <div class="container py-5">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
+        <div class="col-lg-8">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'crypto_news:news_list' %}">News</a></li>
                     <li class="breadcrumb-item active">{{ news.title|truncatechars:50 }}</li>
                 </ol>
             </nav>
             
-            <article class="news-detail">
-                <header class="mb-4">
-                    <h1 class="display-5 fw-bold">{{ news.title }}</h1>
-                    <div class="d-flex justify-content-between align-items-center text-muted mb-3">
-                        <span><i class="fas fa-newspaper me-1"></i>{{ news.source }}</span>
-                        <span><i class="fas fa-clock me-1"></i>{{ news.published_at|date:"F j, Y, g:i a" }}</span>
-                    </div>
-                    
-                    {% if news.related_coins %}
-                    <div class="mb-3">
-                        <span class="badge bg-primary me-2">
-                            <i class="fas fa-coins me-1"></i>Related: {{ news.get_related_coins_display }}
-                        </span>
-                    </div>
-                    {% endif %}
-                    
-                    {% if news.sentiment != 'neutral' %}
-                    <div class="mb-3">
-                        {% if news.sentiment == 'positive' %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-arrow-up me-1"></i>Positive Sentiment
-                            </span>
-                        {% elif news.sentiment == 'negative' %}
-                            <span class="badge bg-danger">
-                                <i class="fas fa-arrow-down me-1"></i>Negative Sentiment
-                            </span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </header>
+            <article>
+                <h1 class="display-5 fw-bold mb-3">{{ news.title }}</h1>
                 
-                <div class="news-content">
-                    <p class="lead">{{ news.summary }}</p>
-                    
-                    {% if news.content and news.content != news.summary %}
-                    <div class="content-body">
-                        {{ news.content|linebreaks }}
-                    </div>
-                    {% endif %}
+                <div class="d-flex gap-3 text-muted mb-3">
+                    <span><i class="fas fa-newspaper me-1"></i>{{ news.source }}</span>
+                    <span><i class="fas fa-clock me-1"></i>{{ news.published_at|date:"F j, Y, g:i a" }}</span>
+                    <span><i class="fas fa-folder me-1"></i>{{ news.get_category_display }}</span>
                 </div>
                 
+                {% if news.related_coins %}
+                <div class="mb-3">
+                    <span class="badge bg-primary">
+                        <i class="fas fa-coins me-1"></i>{{ news.get_related_coins_display }}
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if news.sentiment != 'neutral' %}
+                <div class="mb-3">
+                    {% if news.sentiment == 'positive' %}
+                        <span class="badge bg-success">Bullish</span>
+                    {% elif news.sentiment == 'negative' %}
+                        <span class="badge bg-danger">Bearish</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <p class="lead">{{ news.summary }}</p>
+                
+                {% if news.content and news.content != news.summary %}
+                <div class="mt-4">
+                    {{ news.content|linebreaks }}
+                </div>
+                {% endif %}
+                
                 {% if news.source_url %}
-                <footer class="mt-4 pt-3 border-top">
-                    <a href="{{ news.source_url }}" target="_blank" class="btn btn-outline-primary">
-                        <i class="fas fa-external-link-alt me-1"></i>Read Full Article
+                <div class="mt-4 pt-3 border-top">
+                    <a href="{{ news.source_url }}" target="_blank" class="btn btn-primary">
+                        Read Full Article
                     </a>
-                </footer>
+                </div>
                 {% endif %}
             </article>
+        </div>
+        
+        <div class="col-lg-4">
+            {% if related_news %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Related News</h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_news %}
+                    <div class="mb-3">
+                        <h6><a href="{% url 'crypto_news:news_detail' related.slug %}">{{ related.title }}</a></h6>
+                        <small class="text-muted">{{ related.time_ago }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
