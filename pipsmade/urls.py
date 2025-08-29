@@ -35,6 +35,7 @@ urlpatterns = [
     
     # FAQ URLs
     path('faq/', include('faq.urls')),
+    path('crypto-news/', include('crypto_news.urls')),
 ]
 
 # Serve static files during development

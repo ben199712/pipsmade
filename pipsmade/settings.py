@@ -38,13 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
-    'dashboard',
-    'investments',
-    'transactions',
-    'support',
-    'user_management.apps.UserManagementConfig',
+    'accounts.apps.AccountsConfig',
+    'dashboard.apps.DashboardConfig',
+    'investments.apps.InvestmentsConfig',
+    'transactions.apps.TransactionsConfig',
+    'support.apps.SupportConfig',
     'faq.apps.FaqConfig',
+    'crypto_news.apps.CryptoNewsConfig',
 ]
 
 MIDDLEWARE = [

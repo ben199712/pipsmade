@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load faq_tags %}
+{% load crypto_news_tags %}
 
 {% block content %}
     <!--Start of Tawk.to Script-->
@@ -338,43 +339,51 @@
                 <div class="col-lg-4">
                     <div class="trading-chat">
                         <div class="chat-header">
-                            <h5><i class="fas fa-comments me-2"></i>Trading Signals</h5>
+                            <h5><i class="fas fa-newspaper me-2"></i>Live Crypto News</h5>
                             <span class="status-indicator online"></span>
                         </div>
                         <div class="chat-messages">
-                            <div class="message">
-                                <div class="message-header">
-                                    <strong>Trading Bot</strong>
-                                    <span class="time">2 min ago</span>
+                            {% get_latest_crypto_news 3 as latest_news %}
+                            {% if latest_news %}
+                                {% for news in latest_news %}
+                                <div class="message">
+                                    <div class="message-header">
+                                        <strong>{{ news.source }}</strong>
+                                        <span class="time">{{ news.time_ago }}</span>
+                                    </div>
+                                    <div class="message-content">
+                                        {% if news.related_coins %}
+                                            <span class="badge bg-primary me-2">{{ news.get_related_coins_display }}</span>
+                                        {% endif %}
+                                        {{ news.title|truncatechars:80 }}
+                                    </div>
+                                    {% if news.sentiment != 'neutral' %}
+                                    <div class="message-sentiment mt-1">
+                                        {% if news.sentiment == 'positive' %}
+                                            <span class="badge bg-success"><i class="fas fa-arrow-up"></i> Bullish</span>
+                                        {% elif news.sentiment == 'negative' %}
+                                            <span class="badge bg-danger"><i class="fas fa-arrow-down"></i> Bearish</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                <div class="message-content">
-                                    🚀 BTC showing strong bullish momentum. Entry at $111,445
+                                {% endfor %}
+                            {% else %}
+                                <div class="message">
+                                    <div class="message-header">
+                                        <strong>System</strong>
+                                        <span class="time">Just now</span>
+                                    </div>
+                                    <div class="message-content">
+                                        📰 Fetching latest crypto market news...
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="message">
-                                <div class="message-header">
-                                    <strong>Expert Trader</strong>
-                                    <span class="time">5 min ago</span>
-                                </div>
-                                <div class="message-content">
-                                    📈 SPY breaking resistance. Target: $646.63
-                                </div>
-                            </div>
-                            <div class="message">
-                                <div class="message-header">
-                                    <strong>AI Analysis</strong>
-                                    <span class="time">8 min ago</span>
-                                </div>
-                                <div class="message-content">
-                                    ⚡ High volatility detected in crypto markets. Adjusting positions.
-                                </div>
-                            </div>
+                            {% endif %}
                         </div>
-                        <div class="chat-input">
-                            <input type="text" class="form-control" placeholder="Ask our experts...">
-                            <button class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+                        <div class="chat-footer">
+                            <a href="{% url 'crypto_news:news_list' %}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-external-link-alt me-1"></i>View All News
+                            </a>
                         </div>
                     </div>
                 </div>
