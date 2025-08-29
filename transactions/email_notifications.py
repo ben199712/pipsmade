@@ -4,12 +4,17 @@ Simple email notification system for transactions
 from django.core.mail import send_mail
 from django.conf import settings
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 def send_deposit_notification(deposit_request):
     """Send notification when user makes deposit request"""
     try:
+        # Check if we're in Railway production environment
+        if os.environ.get('RAILWAY'):
+            logger.info(f"Railway environment detected for deposit notification")
+        
         subject = f"New Deposit Request - {deposit_request.user.username}"
         
         message = f"""
@@ -31,6 +36,10 @@ def send_deposit_notification(deposit_request):
         # Send to admin email from settings
         admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
         
+        # Log the attempt
+        logger.info(f"Attempting to send deposit notification to {admin_email}")
+        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
+        
         success = send_mail(
             subject=subject,
             message=message,
@@ -48,11 +57,18 @@ def send_deposit_notification(deposit_request):
         
     except Exception as e:
         logger.error(f"Error sending deposit notification: {e}")
+        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
+        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
+        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
         return False
 
 def send_withdrawal_notification(withdrawal_request):
     """Send notification when user makes withdrawal request"""
     try:
+        # Check if we're in Railway production environment
+        if os.environ.get('RAILWAY'):
+            logger.info(f"Railway environment detected for withdrawal notification")
+        
         subject = f"New Withdrawal Request - {withdrawal_request.user.username}"
         
         message = f"""
@@ -76,6 +92,10 @@ def send_withdrawal_notification(withdrawal_request):
         # Send to admin email from settings
         admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
         
+        # Log the attempt
+        logger.info(f"Attempting to send withdrawal notification to {admin_email}")
+        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
+        
         success = send_mail(
             subject=subject,
             message=message,
@@ -93,4 +113,7 @@ def send_withdrawal_notification(withdrawal_request):
         
     except Exception as e:
         logger.error(f"Error sending withdrawal notification: {e}")
+        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
+        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
+        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
         return False 

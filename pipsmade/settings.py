@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,20 +138,22 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'Celewizzy106@gmail.com'  # Your Gmail address
-EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh'  # ← You need to generate this
+
+# Email credentials - use environment variables in production
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'Celewizzy106@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ztgy cejw avyr qgkh')
 
 # For development - uncomment this line to go back to console output
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Email settings for support system
-DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
-SUPPORT_EMAIL = 'support@pipsmade.com'
-ADMIN_EMAIL = 'Celewizzy106@gmail.com'  # ← CHANGE THIS TO YOUR ACTUAL EMAIL ADDRESS
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@pipsmade.com')
+SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@pipsmade.com')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'Celewizzy106@gmail.com')
 
 # Email templates and branding
 SITE_NAME = 'PipsMade'
-SITE_URL = 'https://pipsmade.com'  # Change this in production
+SITE_URL = os.environ.get('SITE_URL', 'https://pipsmade.com')
 
 # Support system settings
 SUPPORT_RESPONSE_TIME = '2-4 hours'
@@ -162,7 +165,6 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Render.com Configuration
-import os
 if os.environ.get('RENDER'):
     # Render.com specific settings
     DEBUG = False
@@ -184,6 +186,7 @@ if os.environ.get('RENDER'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
 elif os.environ.get('RAILWAY'):
     # Railway.app specific settings
     DEBUG = False
@@ -205,6 +208,54 @@ elif os.environ.get('RAILWAY'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
+    # Railway-specific email configuration
+    # Use environment variables for email settings
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'Celewizzy106@gmail.com')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ztgy cejw avyr qgkh')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@pipsmade.com')
+    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@pipsmade.com')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'Celewizzy106@gmail.com')
+    
+    # Ensure email backend is properly configured for Railway
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    
+    # Logging for debugging email issues
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+            'file': {
+                'class': 'logging.FileHandler',
+                'filename': 'django.log',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+            },
+            'django.request': {
+                'handlers': ['console', 'file'],
+                'level': 'DEBUG',
+                'propagate': False,
+            },
+            'accounts.email_notifications': {
+                'handlers': ['console', 'file'],
+                'level': 'DEBUG',
+            },
+            'transactions.email_notifications': {
+                'handlers': ['console', 'file'],
+                'level': 'DEBUG',
+            },
+        },
+    }
 else:
     # Local development settings
     DEBUG = True
