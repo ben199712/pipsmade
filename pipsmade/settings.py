@@ -133,23 +133,49 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Configuration (for admin notifications and support)
-# For production - Gmail SMTP configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# Railway.com production email configuration
+if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get('RAILWAY'):
+    # Production email settings for Railway
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
 
-# Email credentials - use environment variables in production
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'Celewizzy106@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ztgy cejw avyr qgkh')
+    # Email credentials - MUST be set as environment variables in Railway
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-# For development - uncomment this line to go back to console output
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # Validate email credentials
+    if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+        print("⚠️  WARNING: EMAIL_HOST_USER and EMAIL_HOST_PASSWORD must be set in Railway environment variables!")
+        print("   Go to Railway dashboard > Your Project > Variables tab")
+        print("   Add: EMAIL_HOST_USER = your-email@gmail.com")
+        print("   Add: EMAIL_HOST_PASSWORD = your-app-password")
 
-# Email settings for support system
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@pipsmade.com')
-SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@pipsmade.com')
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'Celewizzy106@gmail.com')
+        # Fallback to console backend if credentials missing
+        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+        print("   Falling back to console email backend")
+
+    # Email settings
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'support@pipsmade.com')
+    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', EMAIL_HOST_USER or 'support@pipsmade.com')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', EMAIL_HOST_USER or 'admin@pipsmade.com')
+
+    # Email timeout settings for Railway
+    EMAIL_TIMEOUT = 30
+
+else:
+    # Development email settings
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Console output for development
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'Celewizzy106@gmail.com'
+    EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh'
+    DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
+    SUPPORT_EMAIL = 'support@pipsmade.com'
+    ADMIN_EMAIL = 'Celewizzy106@gmail.com'
 
 # Email templates and branding
 SITE_NAME = 'PipsMade'

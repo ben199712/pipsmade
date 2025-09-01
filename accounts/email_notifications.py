@@ -1,8 +1,6 @@
 """
-Simple email notification system for accounts
+Enhanced email notification system for accounts - Railway.com compatible
 """
-from django.core.mail import send_mail
-from django.conf import settings
 import logging
 import os
 
@@ -11,97 +9,55 @@ logger = logging.getLogger(__name__)
 def send_login_notification(user):
     """Send notification when user logs in"""
     try:
+        # Use enhanced Railway email service
+        from utils.railway_email_service import send_login_notification as enhanced_send_login
+
+        logger.info(f"🔄 Sending login notification for user: {user.username}")
+
         # Check if we're in Railway production environment
         if os.environ.get('RAILWAY'):
-            logger.info(f"Railway environment detected for login notification")
-        
-        subject = f"User Login Notification - {user.username}"
-        
-        message = f"""
-        User Login Notification
-        
-        User: {user.get_full_name() or user.username}
-        Email: {user.email}
-        Username: {user.username}
-        Time: {user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else 'N/A'}
-        
-        This is an automated notification from the pipsmade investment platform.
-        """
-        
-        # Send to admin email from settings
-        admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
-        
-        # Log the attempt
-        logger.info(f"Attempting to send login notification to {admin_email}")
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        
-        success = send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=False,
-        )
-        
+            logger.info(f"🚂 Railway environment detected for login notification")
+
+        success, message = enhanced_send_login(user)
+
         if success:
-            logger.info(f"Login notification sent successfully to {admin_email}")
+            logger.info(f"✅ Login notification sent successfully: {message}")
         else:
-            logger.error(f"Failed to send login notification to {admin_email}")
-        
+            logger.error(f"❌ Failed to send login notification: {message}")
+
         return success
-        
+
     except Exception as e:
-        logger.error(f"Error sending login notification: {e}")
-        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
-        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
-        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
+        logger.error(f"❌ Error in login notification system: {e}")
+
+        # Fallback to basic logging
+        logger.info(f"📝 LOGIN EVENT: User {user.username} ({user.email}) logged in at {user.last_login}")
         return False
 
 def send_signup_notification(user):
     """Send notification when new user registers"""
     try:
+        # Use enhanced Railway email service
+        from utils.railway_email_service import send_signup_notification as enhanced_send_signup
+
+        logger.info(f"🔄 Sending signup notification for user: {user.username}")
+
         # Check if we're in Railway production environment
         if os.environ.get('RAILWAY'):
-            logger.info(f"Railway environment detected for signup notification")
-        
-        subject = f"New User Registration - {user.username}"
-        
-        message = f"""
-        New User Registration
-        
-        User: {user.get_full_name() or user.username}
-        Email: {user.email}
-        Username: {user.username}
-        Registration Date: {user.date_joined.strftime('%Y-%m-%d %H:%M:%S')}
-        
-        This is an automated notification from the pipsmade investment platform.
-        """
-        
-        # Send to admin email from settings
-        admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
-        
-        # Log the attempt
-        logger.info(f"Attempting to send signup notification to {admin_email}")
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        
-        success = send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=False,
-        )
-        
+            logger.info(f"🚂 Railway environment detected for signup notification")
+
+        success, message = enhanced_send_signup(user)
+
         if success:
-            logger.info(f"Signup notification sent successfully to {admin_email}")
+            logger.info(f"✅ Signup notification sent successfully: {message}")
         else:
-            logger.error(f"Failed to send signup notification to {admin_email}")
-        
+            logger.error(f"❌ Failed to send signup notification: {message}")
+
         return success
-        
+
     except Exception as e:
-        logger.error(f"Error sending signup notification: {e}")
-        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
-        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
-        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
-        return False 
+        logger.error(f"❌ Error in signup notification system: {e}")
+
+        # Fallback to basic logging
+        logger.info(f"📝 SIGNUP EVENT: New user {user.username} ({user.email}) registered at {user.date_joined}")
+        return False

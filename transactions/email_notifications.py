@@ -1,8 +1,6 @@
 """
-Simple email notification system for transactions
+Enhanced email notification system for transactions - Railway.com compatible
 """
-from django.core.mail import send_mail
-from django.conf import settings
 import logging
 import os
 
@@ -11,109 +9,55 @@ logger = logging.getLogger(__name__)
 def send_deposit_notification(deposit_request):
     """Send notification when user makes deposit request"""
     try:
+        # Use enhanced Railway email service
+        from utils.railway_email_service import send_deposit_notification as enhanced_send_deposit
+
+        logger.info(f"🔄 Sending deposit notification for user: {deposit_request.user.username}")
+
         # Check if we're in Railway production environment
         if os.environ.get('RAILWAY'):
-            logger.info(f"Railway environment detected for deposit notification")
-        
-        subject = f"New Deposit Request - {deposit_request.user.username}"
-        
-        message = f"""
-        New Deposit Request
-        
-        User: {deposit_request.user.get_full_name() or deposit_request.user.username}
-        Email: {deposit_request.user.email}
-        Amount: {deposit_request.amount} {deposit_request.crypto_wallet.crypto_type}
-        Transaction Hash: {deposit_request.transaction_hash}
-        Sender Address: {deposit_request.sender_address}
-        Network: {deposit_request.crypto_wallet.network}
-        Request Date: {deposit_request.created_at.strftime('%Y-%m-%d %H:%M:%S')}
-        
-        View in admin: /admin/transactions/depositrequest/{deposit_request.id}/
-        
-        This is an automated notification from the pipsmade investment platform.
-        """
-        
-        # Send to admin email from settings
-        admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
-        
-        # Log the attempt
-        logger.info(f"Attempting to send deposit notification to {admin_email}")
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        
-        success = send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=False,
-        )
-        
+            logger.info(f"🚂 Railway environment detected for deposit notification")
+
+        success, message = enhanced_send_deposit(deposit_request)
+
         if success:
-            logger.info(f"Deposit notification sent successfully to {admin_email}")
+            logger.info(f"✅ Deposit notification sent successfully: {message}")
         else:
-            logger.error(f"Failed to send deposit notification to {admin_email}")
-        
+            logger.error(f"❌ Failed to send deposit notification: {message}")
+
         return success
-        
+
     except Exception as e:
-        logger.error(f"Error sending deposit notification: {e}")
-        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
-        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
-        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
+        logger.error(f"❌ Error in deposit notification system: {e}")
+
+        # Fallback to basic logging
+        logger.info(f"📝 DEPOSIT EVENT: User {deposit_request.user.username} deposited {deposit_request.amount} {deposit_request.crypto_wallet.crypto_type}")
         return False
 
 def send_withdrawal_notification(withdrawal_request):
     """Send notification when user makes withdrawal request"""
     try:
+        # Use enhanced Railway email service
+        from utils.railway_email_service import send_withdrawal_notification as enhanced_send_withdrawal
+
+        logger.info(f"🔄 Sending withdrawal notification for user: {withdrawal_request.user.username}")
+
         # Check if we're in Railway production environment
         if os.environ.get('RAILWAY'):
-            logger.info(f"Railway environment detected for withdrawal notification")
-        
-        subject = f"New Withdrawal Request - {withdrawal_request.user.username}"
-        
-        message = f"""
-        New Withdrawal Request
-        
-        User: {withdrawal_request.user.get_full_name() or withdrawal_request.user.username}
-        Email: {withdrawal_request.user.email}
-        Amount: {withdrawal_request.amount} {withdrawal_request.crypto_type}
-        Destination Address: {withdrawal_request.destination_address}
-        Network: {withdrawal_request.network}
-        Network Fee: {withdrawal_request.network_fee}
-        Platform Fee: {withdrawal_request.platform_fee}
-        Net Amount: {withdrawal_request.net_amount()}
-        Request Date: {withdrawal_request.created_at.strftime('%Y-%m-%d %H:%M:%S')}
-        
-        View in admin: /admin/transactions/withdrawalrequest/{withdrawal_request.id}/
-        
-        This is an automated notification from the pipsmade investment platform.
-        """
-        
-        # Send to admin email from settings
-        admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@pipsmade.com')
-        
-        # Log the attempt
-        logger.info(f"Attempting to send withdrawal notification to {admin_email}")
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        
-        success = send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=False,
-        )
-        
+            logger.info(f"🚂 Railway environment detected for withdrawal notification")
+
+        success, message = enhanced_send_withdrawal(withdrawal_request)
+
         if success:
-            logger.info(f"Withdrawal notification sent successfully to {admin_email}")
+            logger.info(f"✅ Withdrawal notification sent successfully: {message}")
         else:
-            logger.error(f"Failed to send withdrawal notification to {admin_email}")
-        
+            logger.error(f"❌ Failed to send withdrawal notification: {message}")
+
         return success
-        
+
     except Exception as e:
-        logger.error(f"Error sending withdrawal notification: {e}")
-        logger.error(f"Email configuration: BACKEND={getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
-        logger.error(f"Email host: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
-        logger.error(f"Email user: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
-        return False 
+        logger.error(f"❌ Error in withdrawal notification system: {e}")
+
+        # Fallback to basic logging
+        logger.info(f"📝 WITHDRAWAL EVENT: User {withdrawal_request.user.username} requested withdrawal of {withdrawal_request.amount} {withdrawal_request.crypto_type}")
+        return False
