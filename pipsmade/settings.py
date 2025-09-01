@@ -172,7 +172,7 @@ else:
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = 'Celewizzy106@gmail.com'
-    EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh'
+    EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh' # app password 
     DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
     SUPPORT_EMAIL = 'support@pipsmade.com'
     ADMIN_EMAIL = 'Celewizzy106@gmail.com'
