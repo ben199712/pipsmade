@@ -133,46 +133,57 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Configuration (for admin notifications and support)
-# Railway.com production email configuration
-if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get('RAILWAY'):
-    # Production email settings for Railway
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-    EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+# Unified email configuration that works for both local and Railway
 
-    # Email credentials - MUST be set as environment variables in Railway
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+# Check if we're in production (Railway or any production environment)
+IS_PRODUCTION = (
+    os.environ.get('RAILWAY') or
+    os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or
+    not DEBUG or
+    'railway.app' in os.environ.get('RAILWAY_PUBLIC_DOMAIN', '') or
+    'pipsmade.com' in os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+)
+
+if IS_PRODUCTION:
+    print("🚂 Production environment detected - Using production email settings")
+
+    # Production email settings
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False
+    EMAIL_TIMEOUT = 30
+
+    # Get email credentials from environment variables
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'Celewizzy106@gmail.com')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ztgy cejw avyr qgkh')
+
+    # Email addresses
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@pipsmade.com')
+    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@pipsmade.com')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'Celewizzy106@gmail.com')
 
     # Validate email credentials
     if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
-        print("⚠️  WARNING: EMAIL_HOST_USER and EMAIL_HOST_PASSWORD must be set in Railway environment variables!")
-        print("   Go to Railway dashboard > Your Project > Variables tab")
-        print("   Add: EMAIL_HOST_USER = your-email@gmail.com")
-        print("   Add: EMAIL_HOST_PASSWORD = your-app-password")
-
-        # Fallback to console backend if credentials missing
+        print("⚠️  WARNING: Email credentials not properly set!")
+        print(f"   EMAIL_HOST_USER: {'✅ Set' if EMAIL_HOST_USER else '❌ Missing'}")
+        print(f"   EMAIL_HOST_PASSWORD: {'✅ Set' if EMAIL_HOST_PASSWORD else '❌ Missing'}")
+        print("   Using fallback console backend for safety")
         EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-        print("   Falling back to console email backend")
-
-    # Email settings
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'support@pipsmade.com')
-    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', EMAIL_HOST_USER or 'support@pipsmade.com')
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', EMAIL_HOST_USER or 'admin@pipsmade.com')
-
-    # Email timeout settings for Railway
-    EMAIL_TIMEOUT = 30
+    else:
+        print(f"✅ Email configured: {EMAIL_HOST_USER} -> {ADMIN_EMAIL}")
 
 else:
-    # Development email settings
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Console output for development
+    print("🏠 Development environment detected - Using console email backend")
+
+    # Development email settings (console output)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = 'Celewizzy106@gmail.com'
-    EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh' # app password 
+    EMAIL_HOST_PASSWORD = 'ztgy cejw avyr qgkh'  # app password
     DEFAULT_FROM_EMAIL = 'support@pipsmade.com'
     SUPPORT_EMAIL = 'support@pipsmade.com'
     ADMIN_EMAIL = 'Celewizzy106@gmail.com'
@@ -216,7 +227,26 @@ if os.environ.get('RENDER'):
 elif os.environ.get('RAILWAY'):
     # Railway.app specific settings
     DEBUG = False
-    ALLOWED_HOSTS = ['.railway.app', '.up.railway.app', 'pipsmade.com', 'www.pipsmade.com',]
+
+    # Get Railway domain from environment or use defaults
+    railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+    custom_domain = os.environ.get('CUSTOM_DOMAIN', 'pipsmade.com')
+
+    ALLOWED_HOSTS = [
+        '.railway.app',
+        '.up.railway.app',
+        custom_domain,
+        f'www.{custom_domain}',
+        'pipsmade.com',
+        'www.pipsmade.com',
+    ]
+
+    # Add Railway domain if it exists
+    if railway_domain:
+        ALLOWED_HOSTS.append(railway_domain)
+        print(f"🚂 Railway domain added: {railway_domain}")
+
+    print(f"🌐 Allowed hosts: {ALLOWED_HOSTS}")
     
     # Database - Use SQLite on Railway (same as local)
     DATABASES = {
@@ -235,19 +265,8 @@ elif os.environ.get('RAILWAY'):
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     
-    # Railway-specific email configuration
-    # Use environment variables for email settings
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'Celewizzy106@gmail.com')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ztgy cejw avyr qgkh')
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@pipsmade.com')
-    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@pipsmade.com')
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'Celewizzy106@gmail.com')
-    
-    # Ensure email backend is properly configured for Railway
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
+    # Email configuration is handled globally above
+    # No need for Railway-specific email settings here
     
     # Logging for debugging email issues
     LOGGING = {

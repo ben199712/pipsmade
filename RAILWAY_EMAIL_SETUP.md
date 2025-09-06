@@ -1,7 +1,10 @@
-# 📧 Email Setup Guide for Railway.com
+# 📧 Email Setup Guide for Railway.com with Custom Domain
 
 ## 🚨 **Current Issue**
-Your email notifications are not working on Railway.com because of missing environment variables and Gmail security settings.
+Your email notifications stopped working after adding a custom domain to Railway.com. This is because:
+1. The domain change affected environment detection
+2. Email configuration conflicts between local and production settings
+3. Missing or incorrect environment variables on Railway
 
 ## 🔧 **Step-by-Step Fix**
 
@@ -34,21 +37,29 @@ Your email notifications are not working on Railway.com because of missing envir
    - Add these variables:
 
 ```bash
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-16-char-app-password
-ADMIN_EMAIL=your-admin@email.com
-DEFAULT_FROM_EMAIL=your-email@gmail.com
-RAILWAY_ENVIRONMENT_NAME=production
-```
-
-**Example:**
-```bash
 EMAIL_HOST_USER=Celewizzy106@gmail.com
-EMAIL_HOST_PASSWORD=abcd efgh ijkl mnop
+EMAIL_HOST_PASSWORD=your-16-char-app-password
 ADMIN_EMAIL=Celewizzy106@gmail.com
 DEFAULT_FROM_EMAIL=support@pipsmade.com
 RAILWAY_ENVIRONMENT_NAME=production
+CUSTOM_DOMAIN=pipsmade.com
 ```
+
+**🚨 CRITICAL: Use your actual Gmail app password, not the example above!**
+
+### **Step 2b: Quick Setup with Railway CLI (Optional)**
+
+If you have Railway CLI installed:
+
+```bash
+# Make the script executable
+chmod +x railway_setup_email.sh
+
+# Run the setup script
+./railway_setup_email.sh
+```
+
+This will automatically set most variables, but you still need to set `EMAIL_HOST_PASSWORD` manually.
 
 ### **Step 3: Deploy and Test**
 
@@ -56,15 +67,27 @@ RAILWAY_ENVIRONMENT_NAME=production
    - Railway will automatically redeploy when you add environment variables
    - Or manually trigger a deployment
 
-2. **Test email functionality:**
+2. **Test email functionality with domain:**
    ```bash
-   # SSH into Railway or use Railway CLI
+   # Test domain-specific email configuration
+   railway run python test_railway_domain_email.py
+
+   # Test with management command
    railway run python manage.py test_email --email your-email@gmail.com
    ```
 
 3. **Check logs:**
    ```bash
-   railway logs
+   railway logs --tail
+   ```
+
+4. **Verify domain configuration:**
+   ```bash
+   # Check if your domain is properly configured
+   railway domains
+
+   # Check environment variables
+   railway variables
    ```
 
 ## 🧪 **Testing Commands**
